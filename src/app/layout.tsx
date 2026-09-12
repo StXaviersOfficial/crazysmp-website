@@ -14,24 +14,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Z.ai Code Scaffold - AI-Powered Development",
-  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
-  icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
-  },
+  title: "CrazySMP — Minecraft SMP Season 4",
+  description: "A heavily customized vanilla+ Minecraft SMP where creativity meets chaos. Build your kingdom, forge alliances, and write your legacy.",
+  keywords: ["CrazySMP", "Minecraft", "SMP", "Survival", "Multiplayer", "Season 4", "Vanilla+"],
+  authors: [{ name: "CrazyAnishXD" }],
   openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    title: "CrazySMP — Minecraft SMP Season 4",
+    description: "Build your kingdom, forge alliances, and write your legacy.",
+    url: "https://www.crazysmp.bond",
+    siteName: "CrazySMP",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
+    title: "CrazySMP — Minecraft SMP Season 4",
+    description: "Build your kingdom, forge alliances, and write your legacy.",
   },
 };
 
@@ -41,9 +38,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
       >
         {children}
         <Toaster />
