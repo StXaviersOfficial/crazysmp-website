@@ -1,21 +1,29 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
-// Shared transition for consistent feel
+// Shared transition
 const sharedTransition = { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const };
-const sharedInitial = { opacity: 0, scale: 0.8, y: 20 };
-const sharedAnimate = { opacity: 1, scale: 1, y: 0 };
-const sharedExit = { opacity: 0, scale: 0.8, y: 20 };
+
+// CRITICAL: y offset of 0 in exit animation. Previously y:20 made the button
+// appear to "scroll down" with the page during exit. Now opacity-only.
+const sharedInitial = { opacity: 0, scale: 0.85 };
+const sharedAnimate = { opacity: 1, scale: 1 };
+const sharedExit = { opacity: 0, scale: 0.85 };
 
 export function DiscordFab() {
+  const [mounted, setMounted] = React.useState(false);
   const [showPopup, setShowPopup] = React.useState(false);
   const [dismissed, setDismissed] = React.useState(false);
   const [fabVisible, setFabVisible] = React.useState(true);
 
-  // Show popup 3 seconds after mount (unless user dismissed it)
+  // Only render on client (for portal)
+  React.useEffect(() => setMounted(true), []);
+
+  // Show popup 3 seconds after mount
   React.useEffect(() => {
     if (dismissed) return;
     const t = setTimeout(() => setShowPopup(true), 3000);
@@ -56,7 +64,7 @@ export function DiscordFab() {
     }
   }, [showPopup]);
 
-  // Hide on scroll, reappear 500ms after scroll stops
+  // Hide on scroll, reappear 400ms after scroll stops
   React.useEffect(() => {
     let scrollTimer: ReturnType<typeof setTimeout>;
     let isScrolling = false;
@@ -71,7 +79,7 @@ export function DiscordFab() {
       scrollTimer = setTimeout(() => {
         setFabVisible(true);
         isScrolling = false;
-      }, 500);
+      }, 400);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -91,7 +99,11 @@ export function DiscordFab() {
     setDismissed(true);
   };
 
-  return (
+  if (!mounted) return null;
+
+  // Use createPortal to render FAB directly on document.body — escapes any
+  // transformed ancestor (which would break position: fixed).
+  return createPortal(
     <>
       <style>{`
         .csmp-discord-fab-btn {
@@ -105,11 +117,12 @@ export function DiscordFab() {
           box-shadow: 0 8px 32px -4px rgba(88, 101, 242, 0.6), 0 0 0 1px rgba(88, 101, 242, 0.3);
           transition: transform 0.3s ease;
           cursor: pointer;
+          will-change: transform, opacity;
         }
         .csmp-discord-fab-popup {
           position: fixed;
           inset: 0;
-          z-index: 60;
+          z-index: 99998;
           background: rgba(2, 6, 15, 0.45);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
@@ -195,11 +208,11 @@ export function DiscordFab() {
         )}
       </AnimatePresence>
 
-      {/* Circular Discord FAB — z-index 61 (above popup) so always visible */}
+      {/* Circular Discord FAB — z-index 99999 (above everything, true fixed) */}
       <AnimatePresence>
         {fabVisible && (
           <motion.div
-            style={{ position: "fixed", bottom: "24px", right: "24px", zIndex: 61 }}
+            style={{ position: "fixed", bottom: "24px", right: "24px", zIndex: 99999 }}
             initial={sharedInitial}
             animate={sharedAnimate}
             exit={sharedExit}
@@ -220,7 +233,8 @@ export function DiscordFab() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </>,
+    document.body
   );
 }
 
