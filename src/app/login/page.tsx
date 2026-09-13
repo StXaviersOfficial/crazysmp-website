@@ -213,7 +213,7 @@ export default function LoginPage() {
                 alignItems: "center",
                 justifyContent: "center",
                 transition: "all 0.2s ease",
-                transform: "translateY(5px)",
+                transform: "translate(30px, 5px)",
               }}
             >
               {bedrock ? (
