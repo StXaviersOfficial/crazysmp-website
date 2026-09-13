@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ShieldCheck, X } from "lucide-react";
 import { DiscordFab } from "@/components/discord-fab";
 
@@ -16,12 +17,12 @@ const MC = "'Minecraft', 'Inter', monospace";
 const PACKAGES = [
   // Ranks: bonus is now a tier image index (1-6) + a diamond badge.
   // Keys: bonus is a rarity word (COMMON/RARE/EPIC) — no tier badge.
-  { id: "vip",       name: "VIP Rank",       tier: 1, price: "₹199",   tone: "cyan",    img: "/pkg-vip.png",        isKey: false },
-  { id: "legend",    name: "LEGEND Rank",    tier: 2, price: "₹399",   tone: "gold",    img: "/pkg-legend.png",     isKey: false },
-  { id: "immortal",  name: "IMMORTAL Rank",  tier: 3, price: "₹699",   tone: "indigo",  img: "/pkg-immortal.png",   isKey: false },
-  { id: "titan",     name: "TITAN Rank",     tier: 4, price: "₹999",   tone: "fire",    img: "/pkg-titan.png",      isKey: false },
-  { id: "techno",   name: "TECHNO Rank",    tier: 5, price: "₹1499",  tone: "green",   img: "/pkg-techno.png",     isKey: false },
-  { id: "crazy",     name: "CRAZY Rank",     tier: 6, price: "₹2499",  tone: "magenta", img: "/pkg-crazy.png",      isKey: false },
+  { id: "vip",       name: "VIP Rank",       tier: 1, price: "₹29",    tone: "cyan",    img: "/pkg-vip.png",        isKey: false },
+  { id: "legend",    name: "LEGEND Rank",    tier: 2, price: "₹69",    tone: "gold",    img: "/pkg-legend.png",     isKey: false },
+  { id: "immortal",  name: "IMMORTAL Rank",  tier: 3, price: "₹119",   tone: "indigo",  img: "/pkg-immortal.png",   isKey: false },
+  { id: "titan",     name: "TITAN Rank",     tier: 4, price: "₹179",   tone: "fire",    img: "/pkg-titan.png",      isKey: false },
+  { id: "techno",   name: "TECHNO Rank",    tier: 5, price: "₹239",   tone: "green",   img: "/pkg-techno.png",     isKey: false },
+  { id: "crazy",     name: "CRAZY Rank",     tier: 6, price: "₹299",   tone: "magenta", img: "/pkg-crazy.png",      isKey: false },
   // 3-way rotation: Spawner←Crazy, Crazy←Mega, Mega←Spawner (img + tone only)
   { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹99",  tone: "green",   img: "/pkg-crazy-key.png",   isKey: true },
   { id: "mega-key",    name: "Mega Key",    bonus: "RARE",   price: "₹299", tone: "cyan",    img: "/pkg-spawner-key.png", isKey: true },
@@ -36,115 +37,6 @@ const TONES = {
   green:   { border: "#22C55E", bg: "linear-gradient(180deg, rgba(34,197,94,0.22), rgba(18,28,20,0.7))", text: "#4ADE80" },
   magenta: { border: "#C026D3", bg: "linear-gradient(180deg, rgba(192,38,211,0.22), rgba(32,16,38,0.7))", text: "#E879F9" },
 };
-
-function FullScreenLogin({ open, onClose, onLogin }) {
-  const [username, setUsername] = useState("");
-  if (!open) return null;
-
-  // Coordinates measured directly from login-bg.png (450x800) via pixel
-  // color sampling. Each box includes the glowing crystal border so the
-  // whole visual box is clickable.
-  const BOX1 = { left: 14.67, top: 54.375, width: 72,    height: 8.5 };    // username
-  const BOX3 = { left: 13.78, top: 72.375, width: 72.9, height: 7.875 }; // continue
-  // Bedrock toggle (BOX2) has been REMOVED entirely per user request.
-
-  // Only letters, digits, and underscore are valid Minecraft username chars.
-  const sanitize = (raw) => {
-    return raw.replace(/[^A-Za-z0-9_]/g, "").slice(0, 16);
-  };
-
-  const handleSubmit = () => {
-    const clean = username.trim();
-    if (!clean) return;
-    onLogin(clean);
-    onClose();
-  };
-
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "#0F0F13", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-      <style>{`
-        @import url('https://fonts.cdnfonts.com/css/minecraft-4');
-      `}</style>
-
-      <button onClick={onClose} style={{ position: "fixed", top: 20, right: 20, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 50, width: 40, height: 40, color: "rgba(255,255,255,0.6)", cursor: "pointer", zIndex: 101, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <X size={20} />
-      </button>
-
-      {/* Login page image with overlays — fits viewport exactly, no scrolling */}
-      <div style={{ position: "relative", height: "min(100dvh, 177.78vw)", aspectRatio: "450 / 800", maxWidth: "100%", maxHeight: "100dvh" }}>
-        <img src={LOGIN_BG} alt="Login" style={{ width: "100%", height: "100%", display: "block", objectFit: "contain" }} />
-
-        {/* Box 1: Username — entire box clickable, input sits right of the head icon */}
-        <div
-          style={{ position: "absolute", left: `${BOX1.left}%`, top: `${BOX1.top}%`, width: `${BOX1.width}%`, height: `${BOX1.height}%`, display: "flex", alignItems: "center", cursor: "text" }}
-          onClick={(e) => { const input = e.currentTarget.querySelector("input"); if (input) input.focus(); }}
-        >
-          <input
-            value={username}
-            onChange={(e) => setUsername(sanitize(e.target.value))}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            placeholder="Username"
-            maxLength={16}
-            style={{
-              width: "100%",
-              height: "70%",
-              marginLeft: "19%",
-              paddingRight: "6%",
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              color: "#fff",
-              fontFamily: MC,
-              fontWeight: 400,
-              fontSize: 16,
-              letterSpacing: 0.5,
-              caretColor: "#a855f7",
-              transform: "translateY(5px)",
-            }}
-          />
-        </div>
-
-        {/* Box 2 (bedrock toggle) — REMOVED entirely */}
-
-        {/* Box 3: Continue — whole box clickable, glowing text, shifted 2px UP */}
-        <button
-          onClick={handleSubmit}
-          disabled={!username.trim()}
-          style={{
-            position: "absolute",
-            left: `${BOX3.left}%`,
-            top: `${BOX3.top}%`,
-            width: `${BOX3.width}%`,
-            height: `${BOX3.height}%`,
-            background: "transparent",
-            border: "none",
-            cursor: username.trim() ? "pointer" : "default",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: MC,
-              fontSize: 22,
-              fontWeight: 700,
-              color: "#fff",
-              letterSpacing: 3,
-              textShadow: "0 0 6px #fff, 0 0 16px #e879f9, 0 0 28px #c026d3, 0 0 42px #a21caf",
-              opacity: username.trim() ? 1 : 0.55,
-              // 2px UP from current position (was translateY(5px), now translateY(3px))
-              transform: "translateY(3px)",
-              display: "inline-block",
-            }}
-          >
-            CONTINUE
-          </span>
-        </button>
-      </div>
-    </div>
-  );
-}
 
 function PackageModal({ open, onClose, pkg, username }) {
   if (!open || !pkg) return null;
@@ -184,12 +76,20 @@ function PackageModal({ open, onClose, pkg, username }) {
 }
 
 export default function CrazySMPStore() {
+  const router = useRouter();
   const [modalPkg, setModalPkg] = useState(null);
-  const [showLogin, setShowLogin] = useState(false);
   const [username, setUsername] = useState("");
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [skinHead, setSkinHead] = useState("/steve-face.png");
+
+  // Login now happens on its own page (/login) instead of a fixed overlay —
+  // pick up whatever it saved whenever this page mounts (including when
+  // navigating back here after logging in).
+  useEffect(() => {
+    const saved = localStorage.getItem("crazysmp_username");
+    if (saved) setUsername(saved);
+  }, []);
 
   useEffect(() => {
     if (username) {
@@ -216,10 +116,41 @@ export default function CrazySMPStore() {
   }, []);
 
   return (
-    <div style={{ fontFamily: MC, background: "#141019", color: "#fff", minHeight: "100vh", maxWidth: 480, margin: "0 auto", position: "relative", overflow: "hidden" }}>
+    <div className="csmp-root" style={{ fontFamily: MC, background: "#141019", color: "#fff", minHeight: "100vh", position: "relative", overflow: "hidden" }}>
       <style>{`
         @import url('https://fonts.cdnfonts.com/css/minecraft-4');
         * { box-sizing: border-box; }
+        .csmp-root { max-width: 480px; margin: 0 auto; }
+        @media (min-width: 900px) {
+          .csmp-root { max-width: 1200px; }
+        }
+        .csmp-hero {
+          position: relative;
+          background-image: linear-gradient(180deg, rgba(15,10,22,0.2) 0%, rgba(15,10,22,0.35) 30%, rgba(15,10,22,0.6) 60%, rgba(20,16,25,0.9) 85%, #141019 100%), url(${BG});
+          background-size: cover;
+          background-position: center;
+          padding-bottom: 60px;
+        }
+        @media (min-width: 900px) {
+          .csmp-hero {
+            /* No desktop-ratio background photo yet — placeholder gradient
+               until one is provided, instead of badly cropping the phone
+               image across a wide short viewport. */
+            background-image: linear-gradient(180deg, rgba(15,10,22,0.1) 0%, rgba(15,10,22,0.45) 55%, #141019 100%),
+              radial-gradient(circle at 22% 20%, rgba(124,58,237,0.4), transparent 55%),
+              radial-gradient(circle at 82% 80%, rgba(37,99,235,0.32), transparent 55%),
+              linear-gradient(160deg, #1a1025 0%, #150d24 45%, #0a0812 100%);
+            padding: 30px 20px 80px;
+          }
+        }
+        .csmp-logo-img { width: 78%; max-width: 300px; }
+        @media (min-width: 900px) {
+          .csmp-logo-img { max-width: 340px; }
+        }
+        .csmp-packages-grid { display: flex; flex-direction: column; gap: 16px; }
+        @media (min-width: 900px) {
+          .csmp-packages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        }
         @keyframes portalGlow {
           0%, 100% { filter: drop-shadow(0 0 18px rgba(34,211,238,0.5)) drop-shadow(0 0 40px rgba(34,211,238,0.3)); }
           50% { filter: drop-shadow(0 0 28px rgba(34,211,238,0.8)) drop-shadow(0 0 60px rgba(34,211,238,0.5)); }
@@ -231,23 +162,23 @@ export default function CrazySMPStore() {
       `}</style>
 
       {/* HERO */}
-      <div style={{ position: "relative", backgroundImage: `linear-gradient(180deg, rgba(15,10,22,0.2) 0%, rgba(15,10,22,0.35) 30%, rgba(15,10,22,0.6) 60%, rgba(20,16,25,0.9) 85%, #141019 100%), url(${BG})`, backgroundSize: "cover", backgroundPosition: "center", paddingBottom: 60 }}>
+      <div className="csmp-hero">
         <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, padding: "20px 20px 0" }}>
-          <div style={{ textAlign: "right", cursor: "pointer" }} onClick={() => setShowLogin(true)}>
+          <div style={{ textAlign: "right", cursor: "pointer" }} onClick={() => router.push("/login")}>
             <div style={{ fontFamily: MC, fontSize: 16, fontWeight: 700, color: "#fff" }}>{username || "Guest"}</div>
             <div style={{ fontFamily: MC, fontSize: 12, color: "#22D3EE", letterSpacing: 0.5 }}>{username ? "TAP TO EDIT" : "CLICK TO LOGIN"}</div>
           </div>
-          <img src={skinHead} alt="Head" style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer" }} onClick={() => setShowLogin(true)} />
+          <img src={skinHead} alt="Head" style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer" }} onClick={() => router.push("/login")} />
         </div>
         <div style={{ display: "flex", justifyContent: "center", padding: "24px 0 30px" }}>
-          <img src={LOGO} alt="CrazySMP logo" style={{ width: "78%", maxWidth: 300, animation: "portalGlow 3.2s ease-in-out infinite" }} />
+          <img src={LOGO} alt="CrazySMP logo" className="csmp-logo-img" style={{ animation: "portalGlow 3.2s ease-in-out infinite" }} />
         </div>
       </div>
 
       {/* FEATURED PACKAGES */}
       <div style={{ padding: "50px 20px 8px" }}>
         <h2 style={{ fontFamily: MC, fontSize: 26, fontWeight: 700, color: "#22D3EE", margin: "0 0 18px", letterSpacing: 0.5 }}>Featured Packages</h2>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="csmp-packages-grid">
           {PACKAGES.map((pkg) => {
             const t = TONES[pkg.tone] || TONES.cyan;
             // Shift 3 key cards 5px to the left
@@ -312,7 +243,6 @@ export default function CrazySMPStore() {
       {/* Floating Discord button (circular, blur popup, scroll hide/show) */}
       <DiscordFab />
 
-      <FullScreenLogin open={showLogin} onClose={() => setShowLogin(false)} onLogin={(name) => setUsername(name)} />
       <PackageModal open={!!modalPkg} onClose={() => setModalPkg(null)} pkg={modalPkg} username={username} />
 
       {/* Terms & Privacy modals */}
