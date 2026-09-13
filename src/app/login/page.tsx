@@ -178,10 +178,10 @@ export default function LoginPage() {
           />
         )}
 
-        {/* Username box — entire box clickable */}
+        {/* Username box — entire box clickable (shifted 5px down per user request) */}
         {box1 && (
           <div
-            style={{ position: "absolute", left: box1.left, top: box1.top, width: box1.width, height: box1.height, display: "flex", alignItems: "center", cursor: "text", zIndex: 3 }}
+            style={{ position: "absolute", left: box1.left, top: box1.top + 5, width: box1.width, height: box1.height, display: "flex", alignItems: "center", cursor: "text", zIndex: 3 }}
             onClick={(e) => { const input = e.currentTarget.querySelector("input"); if (input) input.focus(); }}
           >
             <input
@@ -247,7 +247,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Continue box — entire box clickable */}
+        {/* Continue box — entire box clickable (shifted 5px down per user request) */}
         {box3 && (
           <button
             onClick={handleSubmit}
@@ -255,7 +255,7 @@ export default function LoginPage() {
             style={{
               position: "absolute",
               left: box3.left,
-              top: box3.top,
+              top: box3.top + 5,
               width: box3.width,
               height: box3.height,
               background: "transparent",

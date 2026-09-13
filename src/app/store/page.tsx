@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ShieldCheck, X } from "lucide-react";
 import { DiscordFab } from "@/components/discord-fab";
 
-const LOGO = "/store-logo-new.webp";
+const LOGO = "/crazysmp-logo.webp";
 const BG = "/crazysmp-bg-new.webp";
 const LOGIN_BG = "/login-bg.webp";
 const DISCORD_URL = "https://discord.gg/GFzAeUj7TJ";
@@ -27,9 +27,9 @@ const PACKAGES = [
   { id: "techno",   name: "TECHNO Rank",    tier: 5, price: "₹239",   tone: "green",   img: "/pkg-techno.webp",     isKey: false },
   { id: "crazy",     name: "CRAZY Rank",     tier: 6, price: "₹299",   tone: "magenta", img: "/pkg-crazy.webp",      isKey: false },
   // Clean 1:1 name-to-file mapping now (new assets from the user, no more rotation)
-  { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹99",  tone: "green",   img: "/pkg-spawner-key.webp", isKey: true },
-  { id: "mega-key",    name: "Mega Key",    bonus: "RARE",   price: "₹299", tone: "cyan",    img: "/pkg-mega-key.webp",    isKey: true },
-  { id: "crazy-key",   name: "Crazy Key",   bonus: "EPIC",   price: "₹499", tone: "magenta", img: "/pkg-crazy-key.webp",   isKey: true },
+  { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹19",  tone: "green",   img: "/pkg-spawner-key.webp", isKey: true },
+  { id: "mega-key",    name: "Mega Key",    bonus: "RARE",   price: "₹39", tone: "cyan",    img: "/pkg-mega-key.webp",    isKey: true },
+  { id: "crazy-key",   name: "Crazy Key",   bonus: "EPIC",   price: "₹69", tone: "magenta", img: "/pkg-crazy-key.webp",   isKey: true },
 ];
 
 const TONES = {
@@ -83,7 +83,7 @@ function PackageModal({ open, onClose, pkg, username }) {
           <div>
             <h3 style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: t.text, margin: 0 }}>{pkg.name}</h3>
             <p style={{ fontFamily: NORMAL, color: "rgba(255,255,255,0.5)", fontSize: 14, margin: "2px 0 0" }}>
-              {pkg.isKey ? pkg.bonus : `Tier ${pkg.tier}`} · {pkg.price}
+              {pkg.price}
             </p>
           </div>
         </div>
@@ -135,9 +135,6 @@ export default function CrazySMPStore() {
   useEffect(() => {
     const imagesToPreload = [
       LOGO, BG, LOGIN_BG, "/steve-face.png",
-      "/tiers/tier-1.png", "/tiers/tier-2.png", "/tiers/tier-3.png",
-      "/tiers/tier-4.png", "/tiers/tier-5.png", "/tiers/tier-6.png",
-      "/tiers/diamond.png",
       ...PACKAGES.map((p) => p.img),
     ];
     imagesToPreload.forEach((src) => {
@@ -240,15 +237,8 @@ export default function CrazySMPStore() {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: MC, fontSize: 18, fontWeight: 700, color: t.text, lineHeight: 1.25, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     {pkg.name}
-                    {/* Tier badge: roman numeral image + diamond badge (ranks only) */}
-                    {pkg.isKey ? (
-                      <span style={{ fontWeight: 700, fontSize: 13, opacity: 0.8, color: t.text }}>({pkg.bonus})</span>
-                    ) : (
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <img src={`/tiers/tier-${pkg.tier}.png`} alt={`Tier ${pkg.tier}`} style={{ height: 22, width: "auto", verticalAlign: "middle" }} />
-                        <img src="/tiers/diamond.png" alt="Diamond" style={{ height: 18, width: 18, verticalAlign: "middle" }} />
-                      </span>
-                    )}
+                    {/* Tier badges (roman numerals + diamond orbs) REMOVED per user request.
+                        Rarity text (COMMON/RARE/EPIC) also removed from key cards. */}
                   </div>
                   <div style={{ fontFamily: NORMAL, fontSize: 16, fontWeight: 700, color: "#fff", marginTop: 4 }}>{pkg.price}</div>
                 </div>
