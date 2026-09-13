@@ -96,9 +96,40 @@ export default function LoginPage() {
         <div style={{ position: "relative", height: "min(100dvh, 177.78vw)", aspectRatio: "450 / 800", maxWidth: "100%", maxHeight: "100dvh" }}>
           <img src={LOGIN_BG} alt="Login" style={{ width: "100%", height: "100%", display: "block", objectFit: "contain" }} />
 
+          {/* Top blur fade — heavy at very top, decreasing quickly to transparent (~12% of viewport) */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "12%",
+              background: "linear-gradient(180deg, rgba(10,6,18,0.92) 0%, rgba(10,6,18,0.5) 35%, rgba(10,6,18,0) 100%)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              pointerEvents: "none",
+              zIndex: 2,
+            }}
+          />
+          {/* Bottom blur fade — heavy at very bottom, decreasing quickly to transparent (~14% of viewport, slightly taller because the CONTINUE box sits there) */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: "14%",
+              background: "linear-gradient(0deg, rgba(10,6,18,0.92) 0%, rgba(10,6,18,0.5) 35%, rgba(10,6,18,0) 100%)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              pointerEvents: "none",
+              zIndex: 2,
+            }}
+          />
+
           {/* Username box — entire box clickable */}
           <div
-            style={{ position: "absolute", left: `${BOX1.left}%`, top: `${BOX1.top}%`, width: `${BOX1.width}%`, height: `${BOX1.height}%`, display: "flex", alignItems: "center", cursor: "text" }}
+            style={{ position: "absolute", left: `${BOX1.left}%`, top: `${BOX1.top}%`, width: `${BOX1.width}%`, height: `${BOX1.height}%`, display: "flex", alignItems: "center", cursor: "text", zIndex: 3 }}
             onClick={(e) => { const input = e.currentTarget.querySelector("input"); if (input) input.focus(); }}
           >
             <input
@@ -142,6 +173,7 @@ export default function LoginPage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              zIndex: 3,
             }}
           >
             <span
