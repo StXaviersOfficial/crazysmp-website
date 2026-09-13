@@ -235,7 +235,7 @@ export default function LoginPage() {
             borderRadius: 24,
             padding: "40px 36px",
             boxShadow: "0 0 60px -10px rgba(147,51,234,0.45), 0 20px 60px rgba(0,0,0,0.5)",
-            backdropFilter: "blur(10px)",
+            backdropFilter: "none",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
