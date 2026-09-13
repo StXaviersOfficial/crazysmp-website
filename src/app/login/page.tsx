@@ -2,31 +2,56 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
+import { X, Check } from "lucide-react";
 
 const LOGIN_BG = "/login-bg.png";
 const LOGO = "/store-logo-new.webp";
 const MC = "'Minecraft', 'Inter', monospace";
 
 // Only letters, digits, and underscore are valid Minecraft username chars.
-const sanitize = (raw: string) => raw.replace(/[^A-Za-z0-9_]/g, "").slice(0, 16);
+// A leading dot (added by the Bedrock toggle, for GeyserMC) is preserved.
+const sanitize = (raw: string, keepDot: boolean) => {
+  const hasDot = keepDot && raw.startsWith(".");
+  const rest = raw.replace(/^\./, "").replace(/[^A-Za-z0-9_]/g, "").slice(0, 16);
+  return (hasDot ? "." : "") + rest;
+};
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [bedrock, setBedrock] = useState(false);
 
   // If the person already has a saved username, prefill it so this reads
   // as "edit" rather than a blank login.
   useEffect(() => {
     const saved = typeof window !== "undefined" ? localStorage.getItem("crazysmp_username") : null;
-    if (saved) setUsername(saved.replace(/^\./, ""));
+    if (saved) {
+      if (saved.startsWith(".")) {
+        setBedrock(true);
+        setUsername(saved.replace(/^\./, ""));
+      } else {
+        setUsername(saved);
+      }
+    }
   }, []);
 
   const goBack = () => router.push("/");
 
+  const toggleBedrock = () => {
+    setBedrock((prev) => {
+      const next = !prev;
+      setUsername((u) => {
+        const bare = u.replace(/^\./, "");
+        if (!next) return bare;
+        return u.startsWith(".") ? u : `.${bare}`;
+      });
+      return next;
+    });
+  };
+
   const handleSubmit = () => {
     const clean = username.trim();
-    if (!clean) return;
+    if (!clean || clean === ".") return;
     localStorage.setItem("crazysmp_username", clean);
     router.push("/");
   };
@@ -35,6 +60,7 @@ export default function LoginPage() {
   // color sampling — the whole crystal-bordered box is clickable, not
   // just the inner input strip.
   const BOX1 = { left: 14.67, top: 54.375, width: 72, height: 8.5 }; // username
+  const BOX2 = { left: 14.67, top: 63.375, width: 72, height: 7.5 }; // bedrock toggle
   const BOX3 = { left: 13.78, top: 72.375, width: 72.9, height: 7.875 }; // continue
 
   return (
@@ -96,32 +122,30 @@ export default function LoginPage() {
         <div style={{ position: "relative", height: "min(100dvh, 177.78vw)", aspectRatio: "450 / 800", maxWidth: "100%", maxHeight: "100dvh" }}>
           <img src={LOGIN_BG} alt="Login" style={{ width: "100%", height: "100%", display: "block", objectFit: "contain" }} />
 
-          {/* Top blur fade — heavy at very top, decreasing quickly to transparent (~12% of viewport) */}
+          {/* Top blur fade — thin (~3% of viewport, roughly 0.5cm on a phone),
+              subtle black fade to blend the image edge with the dark background.
+              No heavy blur — just enough to smooth the transition. */}
           <div
             style={{
               position: "absolute",
               top: 0,
               left: 0,
               right: 0,
-              height: "12%",
-              background: "linear-gradient(180deg, rgba(10,6,18,0.92) 0%, rgba(10,6,18,0.5) 35%, rgba(10,6,18,0) 100%)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
+              height: "3%",
+              background: "linear-gradient(180deg, rgba(10,6,18,0.85) 0%, rgba(10,6,18,0) 100%)",
               pointerEvents: "none",
               zIndex: 2,
             }}
           />
-          {/* Bottom blur fade — heavy at very bottom, decreasing quickly to transparent (~14% of viewport, slightly taller because the CONTINUE box sits there) */}
+          {/* Bottom blur fade — thin (~3%), same subtle fade at the bottom edge */}
           <div
             style={{
               position: "absolute",
               bottom: 0,
               left: 0,
               right: 0,
-              height: "14%",
-              background: "linear-gradient(0deg, rgba(10,6,18,0.92) 0%, rgba(10,6,18,0.5) 35%, rgba(10,6,18,0) 100%)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
+              height: "3%",
+              background: "linear-gradient(0deg, rgba(10,6,18,0.85) 0%, rgba(10,6,18,0) 100%)",
               pointerEvents: "none",
               zIndex: 2,
             }}
@@ -134,7 +158,7 @@ export default function LoginPage() {
           >
             <input
               value={username}
-              onChange={(e) => setUsername(sanitize(e.target.value))}
+              onChange={(e) => setUsername(sanitize(e.target.value, bedrock))}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               placeholder="Username"
               maxLength={16}
@@ -155,6 +179,35 @@ export default function LoginPage() {
                 transform: "translateY(5px)",
               }}
             />
+          </div>
+
+          {/* Bedrock toggle box — square red/green toggle, X when off, checkmark when on */}
+          <div
+            style={{ position: "absolute", left: `${BOX2.left}%`, top: `${BOX2.top}%`, width: `${BOX2.width}%`, height: `${BOX2.height}%`, display: "flex", alignItems: "center", cursor: "pointer", zIndex: 3 }}
+            onClick={toggleBedrock}
+          >
+            <div
+              style={{
+                margin: "0 auto",
+                height: "70%",
+                aspectRatio: "1.6 / 1",
+                borderRadius: 8,
+                background: bedrock ? "#22c55e" : "#dc2626",
+                border: `2px solid ${bedrock ? "#16a34a" : "#991b1b"}`,
+                boxShadow: bedrock ? "0 0 12px rgba(34,197,94,0.6)" : "0 0 8px rgba(220,38,38,0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s ease",
+                transform: "translateY(5px)",
+              }}
+            >
+              {bedrock ? (
+                <Check size={20} color="#fff" strokeWidth={3} />
+              ) : (
+                <X size={20} color="#fff" strokeWidth={3} />
+              )}
+            </div>
           </div>
 
           {/* Continue box — entire box clickable */}
@@ -256,7 +309,7 @@ export default function LoginPage() {
             <input
               className="csmp-login-input"
               value={username}
-              onChange={(e) => setUsername(sanitize(e.target.value))}
+              onChange={(e) => setUsername(sanitize(e.target.value, bedrock))}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               placeholder="Username"
               maxLength={16}
