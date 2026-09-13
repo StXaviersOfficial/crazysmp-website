@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, X } from "lucide-react";
 import { DiscordFab } from "@/components/discord-fab";
-import { ExperimentalMode, ExperimentalToolbar } from "@/components/experimental-mode";
 
 const LOGO = "/store-logo-new.webp";
 const BG = "/crazysmp-bg-new.webp";
@@ -54,8 +53,8 @@ function PackageModal({ open, onClose, pkg, username }) {
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
           <img src={pkg.img} alt={pkg.name} style={{ width: 64, height: 64, borderRadius: 14, objectFit: "cover" }} />
           <div>
-            <h3 style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: t.text, margin: 0 }} data-editable>{pkg.name}</h3>
-            <p style={{ fontFamily: NORMAL, color: "rgba(255,255,255,0.5)", fontSize: 14, margin: "2px 0 0" }} data-editable>
+            <h3 style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: t.text, margin: 0 }}>{pkg.name}</h3>
+            <p style={{ fontFamily: NORMAL, color: "rgba(255,255,255,0.5)", fontSize: 14, margin: "2px 0 0" }}>
               {pkg.isKey ? pkg.bonus : `Tier ${pkg.tier}`} · {pkg.price}
             </p>
           </div>
@@ -120,7 +119,6 @@ export default function CrazySMPStore() {
   }, []);
 
   return (
-    <ExperimentalMode>
       <div className="csmp-root" style={{ fontFamily: MC, background: "#141019", color: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
       <style>{`
         @import url('https://fonts.cdnfonts.com/css/minecraft-4');
@@ -168,25 +166,23 @@ export default function CrazySMPStore() {
 
       {/* HERO */}
       <div className="csmp-hero">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "20px 20px 0" }}>
-          {/* Experimental mode toolbar (LEFT side of Guest) — provided by ExperimentalMode context */}
-          <ExperimentalToolbar />
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ textAlign: "right", cursor: "pointer" }}>
-              <div style={{ fontFamily: MC, fontSize: 16, fontWeight: 700, color: "#fff" }} data-editable data-edit-type="text">{username || "Guest"}</div>
-              <div style={{ fontFamily: MC, fontSize: 12, color: "#22D3EE", letterSpacing: 0.5 }} data-editable data-edit-type="text">{username ? "TAP TO EDIT" : "CLICK TO LOGIN"}</div>
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, padding: "20px 20px 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => router.push("/login")}>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontFamily: MC, fontSize: 16, fontWeight: 700, color: "#fff" }}>{username || "Guest"}</div>
+              <div style={{ fontFamily: MC, fontSize: 12, color: "#22D3EE", letterSpacing: 0.5 }}>{username ? "TAP TO EDIT" : "CLICK TO LOGIN"}</div>
             </div>
-            <img src={skinHead} alt="Head" className="csmp-steve-logo" style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer" }} onClick={() => router.push("/login")} />
+            <img src={skinHead} alt="Head" style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)" }} />
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "center", padding: "24px 0 30px" }}>
-          <img src={LOGO} alt="CrazySMP logo" className="csmp-logo-img" data-editable data-edit-type="image" style={{ animation: "portalGlow 3.2s ease-in-out infinite" }} />
+          <img src={LOGO} alt="CrazySMP logo" className="csmp-logo-img" style={{ animation: "portalGlow 3.2s ease-in-out infinite" }} />
         </div>
       </div>
 
       {/* FEATURED PACKAGES — flex:1 so footer gets pushed to the very bottom on desktop */}
       <div style={{ padding: "50px 20px 8px", flex: 1 }}>
-        <h2 style={{ fontFamily: MC, fontSize: 26, fontWeight: 700, color: "#22D3EE", margin: "0 0 18px", letterSpacing: 0.5 }} data-editable data-edit-type="text">Featured Packages</h2>
+        <h2 style={{ fontFamily: MC, fontSize: 26, fontWeight: 700, color: "#22D3EE", margin: "0 0 18px", letterSpacing: 0.5 }}>Featured Packages</h2>
         <div className="csmp-packages-grid">
           {PACKAGES.map((pkg) => {
             const t = TONES[pkg.tone] || TONES.cyan;
@@ -212,21 +208,21 @@ export default function CrazySMPStore() {
                   ...keyShift,
                 }}
               >
-                <img src={pkg.img} alt={pkg.name} data-editable data-edit-type="image" style={{ width: 72, height: 72, borderRadius: 14, flexShrink: 0, objectFit: "cover" }} />
+                <img src={pkg.img} alt={pkg.name} style={{ width: 72, height: 72, borderRadius: 14, flexShrink: 0, objectFit: "cover" }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: MC, fontSize: 18, fontWeight: 700, color: t.text, lineHeight: 1.25, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }} data-editable data-edit-type="text">
+                  <div style={{ fontFamily: MC, fontSize: 18, fontWeight: 700, color: t.text, lineHeight: 1.25, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     {pkg.name}
                     {/* Tier badge: roman numeral image + diamond badge (ranks only) */}
                     {pkg.isKey ? (
-                      <span style={{ fontWeight: 700, fontSize: 13, opacity: 0.8, color: t.text }} data-editable data-edit-type="text">({pkg.bonus})</span>
+                      <span style={{ fontWeight: 700, fontSize: 13, opacity: 0.8, color: t.text }}>({pkg.bonus})</span>
                     ) : (
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <img src={`/tiers/tier-${pkg.tier}.png`} alt={`Tier ${pkg.tier}`} data-editable data-edit-type="image" style={{ height: 22, width: "auto", verticalAlign: "middle" }} />
-                        <img src="/tiers/diamond.png" alt="Diamond" data-editable data-edit-type="image" style={{ height: 18, width: 18, verticalAlign: "middle" }} />
+                        <img src={`/tiers/tier-${pkg.tier}.png`} alt={`Tier ${pkg.tier}`} style={{ height: 22, width: "auto", verticalAlign: "middle" }} />
+                        <img src="/tiers/diamond.png" alt="Diamond" style={{ height: 18, width: 18, verticalAlign: "middle" }} />
                       </span>
                     )}
                   </div>
-                  <div style={{ fontFamily: NORMAL, fontSize: 16, fontWeight: 700, color: "#fff", marginTop: 4 }} data-editable data-edit-type="text">{pkg.price}</div>
+                  <div style={{ fontFamily: NORMAL, fontSize: 16, fontWeight: 700, color: "#fff", marginTop: 4 }}>{pkg.price}</div>
                 </div>
               </button>
             );
@@ -237,16 +233,16 @@ export default function CrazySMPStore() {
       {/* FOOTER — store-only page, just credits + text-only Terms/Privacy links
           (sits at very bottom of viewport because main wrapper is flex column) */}
       <div style={{ padding: "24px 20px 34px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: "auto" }}>
-        <div style={{ fontFamily: MC, fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.6)", marginTop: 16 }} data-editable data-edit-type="text">Copyright © CrazySMP 2026. All Rights Reserved.</div>
-        <div style={{ fontFamily: MC, fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 4 }} data-editable data-edit-type="text">We are not affiliated with Mojang AB.</div>
-        <div style={{ fontFamily: MC, fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 10, lineHeight: 1.6 }} data-editable data-edit-type="text">
+        <div style={{ fontFamily: MC, fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.6)", marginTop: 16 }}>Copyright © CrazySMP 2026. All Rights Reserved.</div>
+        <div style={{ fontFamily: MC, fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>We are not affiliated with Mojang AB.</div>
+        <div style={{ fontFamily: MC, fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 10, lineHeight: 1.6 }}>
           By using our store you agree to our{" "}
           <a onClick={() => setShowTerms(true)} style={{ color: "rgba(34,211,238,0.7)", cursor: "pointer", textDecoration: "underline" }}>Terms</a>{" "}
           and{" "}
           <a onClick={() => setShowPrivacy(true)} style={{ color: "rgba(34,211,238,0.7)", cursor: "pointer", textDecoration: "underline" }}>Privacy Policy</a>.
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 14, color: "rgba(255,255,255,0.3)", fontSize: 12, fontFamily: MC }}>
-          <ShieldCheck size={14} /> <span data-editable>Checkout secured by a trusted payment processor</span>
+          <ShieldCheck size={14} /> Checkout secured by a trusted payment processor
         </div>
       </div>
 
@@ -260,7 +256,7 @@ export default function CrazySMPStore() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(8,6,14,0.8)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }} onClick={() => setShowTerms(false)}>
           <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480, maxHeight: "80vh", overflowY: "auto", background: "#1c1726", borderRadius: 16, padding: 24, border: "1px solid rgba(34,211,238,0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <h3 style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: "#22D3EE", margin: 0 }} data-editable>Terms & Conditions</h3>
+              <h3 style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: "#22D3EE", margin: 0 }}>Terms & Conditions</h3>
               <button onClick={() => setShowTerms(false)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}><X size={20} /></button>
             </div>
             <div style={{ fontFamily: MC, fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,0.7)" }}>
@@ -278,7 +274,7 @@ export default function CrazySMPStore() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(8,6,14,0.8)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }} onClick={() => setShowPrivacy(false)}>
           <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480, maxHeight: "80vh", overflowY: "auto", background: "#1c1726", borderRadius: 16, padding: 24, border: "1px solid rgba(34,211,238,0.3)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <h3 style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: "#22D3EE", margin: 0 }} data-editable>Privacy Policy</h3>
+              <h3 style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: "#22D3EE", margin: 0 }}>Privacy Policy</h3>
               <button onClick={() => setShowPrivacy(false)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}><X size={20} /></button>
             </div>
             <div style={{ fontFamily: MC, fontSize: 14, lineHeight: 1.7, color: "rgba(255,255,255,0.7)" }}>
@@ -291,6 +287,5 @@ export default function CrazySMPStore() {
         </div>
       )}
     </div>
-    </ExperimentalMode>
   );
 }

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { X, Check } from "lucide-react";
-import { ExperimentalMode, ExperimentalToolbar } from "@/components/experimental-mode";
 
 const LOGIN_BG = "/login-bg.png";
 const LOGO = "/store-logo-new.webp";
@@ -65,7 +64,6 @@ export default function LoginPage() {
   const BOX3 = { left: 13.78, top: 72.375, width: 72.9, height: 7.875 }; // continue
 
   return (
-    <ExperimentalMode>
       <div className="csmp-root" style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#000000" }}>
         <style>{`
           @import url('https://fonts.cdnfonts.com/css/minecraft-4');
@@ -79,11 +77,6 @@ export default function LoginPage() {
           .csmp-login-input::placeholder { color: rgba(255,255,255,0.35); }
           .csmp-login-continue:active { transform: scale(0.97); }
         `}</style>
-
-        {/* Experimental toolbar (top-left, so it doesn't overlap the close button) */}
-        <div style={{ position: "fixed", top: 20, left: 20, zIndex: 11 }}>
-          <ExperimentalToolbar />
-        </div>
 
         <button
           onClick={goBack}
@@ -329,6 +322,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-    </ExperimentalMode>
   );
 }
