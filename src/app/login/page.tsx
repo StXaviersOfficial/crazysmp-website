@@ -110,60 +110,11 @@ export default function LoginPage() {
 
       {/* ============ MOBILE: exact pixel-overlay design on login-bg.png ============ */}
       <div className="csmp-login-mobile" style={{ position: "absolute", inset: 0, alignItems: "center", justifyContent: "center" }}>
-        {/* Blurred backdrop fills any letterbox gaps left by object-fit:contain
-            — increased blur for a softer, more atmospheric fill. */}
-        <div
-          style={{
-            position: "absolute",
-            inset: -40,
-            backgroundImage: `url(${LOGIN_BG})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            filter: "blur(48px) brightness(0.45) saturate(1.3)",
-            transform: "scale(1.2)",
-          }}
-        />
-        {/* Solid black overlay so the letterbox areas are pure black */}
+        {/* Solid black background — no blur, no backdrop, just pure black */}
         <div style={{ position: "absolute", inset: 0, background: "#000000" }} />
 
         <div style={{ position: "relative", height: "min(100dvh, 177.78vw)", aspectRatio: "450 / 800", maxWidth: "100%", maxHeight: "100dvh" }}>
           <img src={LOGIN_BG} alt="Login" style={{ width: "100%", height: "100%", display: "block", objectFit: "contain" }} />
-
-          {/* Circular vignette overlay — symmetrical darkening at ALL edges (top, bottom, left, right)
-              fading to transparent in the center. Replaces the thin rectangular strips. */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.85) 100%)",
-              pointerEvents: "none",
-              zIndex: 2,
-            }}
-          />
-          {/* Top blur strip — thicker (8%), fades from solid black to transparent */}
-          <div
-            style={{
-              position: "absolute",
-              top: 0, left: 0, right: 0, height: "8%",
-              background: "linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)",
-              backdropFilter: "blur(6px)",
-              WebkitBackdropFilter: "blur(6px)",
-              pointerEvents: "none",
-              zIndex: 2,
-            }}
-          />
-          {/* Bottom blur strip — thicker (8%), fades from solid black to transparent */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0, left: 0, right: 0, height: "8%",
-              background: "linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)",
-              backdropFilter: "blur(6px)",
-              WebkitBackdropFilter: "blur(6px)",
-              pointerEvents: "none",
-              zIndex: 2,
-            }}
-          />
 
           {/* Username box — entire box clickable */}
           <div
