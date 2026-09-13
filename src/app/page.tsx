@@ -33,119 +33,157 @@ function FullScreenLogin({ open, onClose, onLogin }) {
   const [bedrock, setBedrock] = useState(false);
   if (!open) return null;
 
-  // Login page image is 450x800. We display it centered and overlay interactive elements.
-  // Coordinates from VLM analysis:
-  // Section 1 (username box): x=65, y=568, w=320, h=75
-  //   Steve icon: x=185, y=597, w=45, h=50 → input goes right of it: x=245, y=585, w=130, h=40
-  // Section 2 (bedrock toggle): x=115, y=660, w=220, h=55
-  // Section 3 (continue button): x=65, y=740, w=320, h=80
+  // Coordinates measured directly from login-bg.png (450x800) via pixel
+  // color sampling — not estimated. Each box below includes the glowing
+  // crystal border, so the whole visual box is clickable, not just the
+  // dark interior strip.
+  const BOX1 = { left: 14.67, top: 54.375, width: 72, height: 8.5 };   // username
+  const BOX2 = { left: 14.67, top: 63.375, width: 72, height: 7.5 };   // bedrock toggle
+  const BOX3 = { left: 13.78, top: 72.375, width: 72.9, height: 7.875 }; // continue
+
+  // Only letters, digits, and underscore are valid Minecraft username
+  // characters — strip everything else (including spaces) as the user
+  // types. A leading dot (added by the Bedrock toggle, for GeyserMC) is
+  // preserved if already present instead of being stripped.
+  const sanitize = (raw) => {
+    const hasDot = raw.startsWith(".");
+    const rest = raw.replace(/^\./, "").replace(/[^A-Za-z0-9_]/g, "").slice(0, 16);
+    return (hasDot ? "." : "") + rest;
+  };
+
+  const toggleBedrock = () => {
+    setBedrock((prev) => {
+      const next = !prev;
+      setUsername((u) => {
+        const bare = u.replace(/^\./, "");
+        if (!next) return bare;
+        // smart dot: don't add a second one if it's already there
+        return u.startsWith(".") ? u : `.${bare}`;
+      });
+      return next;
+    });
+  };
+
+  const handleSubmit = () => {
+    const clean = username.trim();
+    if (!clean || clean === ".") return;
+    onLogin(clean);
+    onClose();
+  };
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#0F0F13", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", overflow: "auto" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;700;800;900&display=swap');`}</style>
-      
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;700;800;900&display=swap');
+        .csmp-toggle-track { transition: background 0.2s ease; }
+        .csmp-toggle-knob { transition: transform 0.2s ease; }
+      `}</style>
+
       <button onClick={onClose} style={{ position: "fixed", top: 20, right: 20, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 50, width: 40, height: 40, color: "rgba(255,255,255,0.6)", cursor: "pointer", zIndex: 101, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <X size={20} />
       </button>
 
       {/* Login page image with overlays */}
       <div style={{ position: "relative", width: 450, maxWidth: "100%" }}>
-        <img src={LOGIN_BG} alt="Login" style={{ width: "100%", height: "auto", display: "block" }} useMap="#loginmap" />
-        
-        {/* Section 1: Username input — overlay on the box */}
-        <div style={{ position: "absolute", left: "14.4%", top: "71%", width: "71.1%", height: "9.4%", display: "flex", alignItems: "center", cursor: "text" }}
-             onClick={(e) => { const input = e.currentTarget.querySelector('input'); if (input) input.focus(); }}>
-          {/* Input field — positioned to the right of the Steve icon */}
+        <img src={LOGIN_BG} alt="Login" style={{ width: "100%", height: "auto", display: "block" }} />
+
+        {/* Box 1: Username — entire box is clickable, input sits right of the head icon */}
+        <div
+          style={{ position: "absolute", left: `${BOX1.left}%`, top: `${BOX1.top}%`, width: `${BOX1.width}%`, height: `${BOX1.height}%`, display: "flex", alignItems: "center", cursor: "text" }}
+          onClick={(e) => { const input = e.currentTarget.querySelector("input"); if (input) input.focus(); }}
+        >
           <input
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && bedrock !== null && handleSubmit()}
-            placeholder=""
+            onChange={(e) => setUsername(sanitize(e.target.value))}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            placeholder="Username"
+            maxLength={17}
             style={{
-              position: "absolute",
-              left: "40%",
-              top: "20%",
-              width: "55%",
-              height: "60%",
+              width: "100%",
+              height: "70%",
+              marginLeft: "19%",
+              paddingRight: "6%",
               background: "transparent",
               border: "none",
               outline: "none",
               color: "#fff",
               fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
               fontSize: 16,
-              caretColor: "#22D3EE",
+              letterSpacing: 0.3,
+              caretColor: "#a855f7",
             }}
           />
         </div>
 
-        {/* Section 2: Bedrock toggle */}
-        <button
-          onClick={() => setBedrock(!bedrock)}
-          style={{
-            position: "absolute",
-            left: "25.6%",
-            top: "82.5%",
-            width: "48.9%",
-            height: "6.9%",
-            background: bedrock ? "rgba(34,197,94,0.3)" : "transparent",
-            border: "none",
-            cursor: "pointer",
-            borderRadius: 8,
-          }}
+        {/* Box 2: Bedrock account — whole bar toggles, plus a dedicated switch on the right */}
+        <div
+          style={{ position: "absolute", left: `${BOX2.left}%`, top: `${BOX2.top}%`, width: `${BOX2.width}%`, height: `${BOX2.height}%`, display: "flex", alignItems: "center", cursor: "pointer" }}
+          onClick={toggleBedrock}
         >
-          {bedrock && (
-            <span style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#4ADE80", fontSize: 18, fontFamily: "'Baloo 2', sans-serif", fontWeight: 700 }}>✓</span>
-          )}
-        </button>
+          <div
+            className="csmp-toggle-track"
+            style={{
+              marginLeft: "80.5%",
+              width: "14.5%",
+              aspectRatio: "2 / 1",
+              borderRadius: 999,
+              background: bedrock ? "linear-gradient(90deg,#0f9b6a,#34d399)" : "rgba(255,255,255,0.15)",
+              border: bedrock ? "1px solid rgba(74,222,128,0.8)" : "1px solid rgba(255,255,255,0.3)",
+              boxShadow: bedrock ? "0 0 10px rgba(52,211,153,0.7)" : "none",
+              position: "relative",
+              flexShrink: 0,
+            }}
+          >
+            <div
+              className="csmp-toggle-knob"
+              style={{
+                position: "absolute",
+                top: "10%",
+                left: "8%",
+                height: "80%",
+                aspectRatio: "1 / 1",
+                borderRadius: "50%",
+                background: "#fff",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+                transform: bedrock ? "translateX(95%)" : "translateX(0%)",
+              }}
+            />
+          </div>
+        </div>
 
-        {/* Section 3: Continue button */}
+        {/* Box 3: Continue — whole box clickable, glowing text matching the background style */}
         <button
-          onClick={() => { if (username.trim()) { const name = bedrock ? `.${username.trim()}` : username.trim(); onLogin(name); onClose(); } }}
-          disabled={!username.trim()}
+          onClick={handleSubmit}
+          disabled={!username.trim() || username.trim() === "."}
           style={{
             position: "absolute",
-            left: "14.4%",
-            top: "92.5%",
-            width: "71.1%",
-            height: "10%",
-            background: username.trim() ? "rgba(192,38,211,0.3)" : "transparent",
+            left: `${BOX3.left}%`,
+            top: `${BOX3.top}%`,
+            width: `${BOX3.width}%`,
+            height: `${BOX3.height}%`,
+            background: "transparent",
             border: "none",
             cursor: username.trim() ? "pointer" : "default",
-            borderRadius: 12,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          {username.trim() && (
-            <span style={{
-              fontFamily: "'Orbitron', sans-serif",
-              fontSize: 20,
+          <span
+            style={{
+              fontFamily: "'Baloo 2', sans-serif",
+              fontSize: 22,
               fontWeight: 800,
               color: "#fff",
-              textShadow: "0 0 10px rgba(192,38,211,0.8), 0 0 20px rgba(192,38,211,0.5)",
-              letterSpacing: 2,
-            }}>
-              CONTINUE
-            </span>
-          )}
+              letterSpacing: 3,
+              textShadow: "0 0 6px #fff, 0 0 16px #e879f9, 0 0 28px #c026d3, 0 0 42px #a21caf",
+              opacity: username.trim() ? 1 : 0.55,
+            }}
+          >
+            CONTINUE
+          </span>
         </button>
-
-        {/* Bedrock username preview */}
-        {bedrock && username.trim() && (
-          <div style={{
-            position: "absolute",
-            left: "14.4%",
-            top: "90%",
-            width: "71.1%",
-            textAlign: "center",
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 12,
-            color: "rgba(74,222,128,0.7)",
-          }}>
-            .{username.trim()}
-          </div>
-        )}
       </div>
     </div>
   );
