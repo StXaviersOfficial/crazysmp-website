@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Copy, Check, ExternalLink, ChevronDown, Shield, Zap, Users, Key, ShoppingCart, LogIn } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollProgress, CustomCursor, FadeUp } from "@/components/motion-primitives";
