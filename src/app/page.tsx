@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ShieldCheck, X } from "lucide-react";
+import { DiscordFab } from "@/components/discord-fab";
 const LOGO = "/store-logo-new.webp";
 const BG = "/crazysmp-bg-new.webp";
 const LOGIN_BG = "/login-bg.png";
@@ -14,9 +15,10 @@ const PACKAGES = [
   { id: "titan", name: "TITAN Rank", bonus: "Tier IV · MASTER", price: "₹999", tone: "fire", img: "/pkg-titan.png" },
   { id: "techno", name: "TECHNO Rank", bonus: "Tier V · ELITE", price: "₹1499", tone: "green", img: "/pkg-techno.png" },
   { id: "crazy", name: "CRAZY Rank", bonus: "Tier VI · MAX", price: "₹2499", tone: "magenta", img: "/pkg-crazy.png" },
-  { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹99", tone: "cyan", img: "/pkg-spawner-key.png" },
-  { id: "mega-key", name: "Mega Key", bonus: "RARE", price: "₹299", tone: "magenta", img: "/pkg-mega-key.png" },
-  { id: "crazy-key", name: "Crazy Key", bonus: "EPIC", price: "₹499", tone: "green", img: "/pkg-crazy-key.png" },
+  // 3-way rotation: Spawner←Crazy, Crazy←Mega, Mega←Spawner (img + tone only)
+  { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹99", tone: "green", img: "/pkg-crazy-key.png" },
+  { id: "mega-key", name: "Mega Key", bonus: "RARE", price: "₹299", tone: "cyan", img: "/pkg-spawner-key.png" },
+  { id: "crazy-key", name: "Crazy Key", bonus: "EPIC", price: "₹499", tone: "magenta", img: "/pkg-mega-key.png" },
 ];
 
 const TONES = {
@@ -72,7 +74,7 @@ function FullScreenLogin({ open, onClose, onLogin }) {
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#0F0F13", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", overflow: "auto" }}>
+    <div style={{ position: "fixed", inset: 0, background: "#0F0F13", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;700;800;900&display=swap');
         .csmp-toggle-track { transition: background 0.2s ease; }
@@ -83,9 +85,9 @@ function FullScreenLogin({ open, onClose, onLogin }) {
         <X size={20} />
       </button>
 
-      {/* Login page image with overlays */}
-      <div style={{ position: "relative", width: 450, maxWidth: "100%" }}>
-        <img src={LOGIN_BG} alt="Login" style={{ width: "100%", height: "auto", display: "block" }} />
+      {/* Login page image with overlays — fits viewport exactly, no scrolling */}
+      <div style={{ position: "relative", height: "min(100dvh, 177.78vw)", aspectRatio: "450 / 800", maxWidth: "100%", maxHeight: "100dvh" }}>
+        <img src={LOGIN_BG} alt="Login" style={{ width: "100%", height: "100%", display: "block", objectFit: "contain" }} />
 
         {/* Box 1: Username — entire box is clickable, input sits right of the head icon */}
         <div
@@ -112,6 +114,7 @@ function FullScreenLogin({ open, onClose, onLogin }) {
               fontSize: 16,
               letterSpacing: 0.3,
               caretColor: "#a855f7",
+              transform: "translateY(5px)",
             }}
           />
         </div>
@@ -133,6 +136,7 @@ function FullScreenLogin({ open, onClose, onLogin }) {
               boxShadow: bedrock ? "0 0 10px rgba(52,211,153,0.7)" : "none",
               position: "relative",
               flexShrink: 0,
+              transform: "translateY(5px)",
             }}
           >
             <div
@@ -179,6 +183,8 @@ function FullScreenLogin({ open, onClose, onLogin }) {
               letterSpacing: 3,
               textShadow: "0 0 6px #fff, 0 0 16px #e879f9, 0 0 28px #c026d3, 0 0 42px #a21caf",
               opacity: username.trim() ? 1 : 0.55,
+              transform: "translateY(5px)",
+              display: "inline-block",
             }}
           >
             CONTINUE
@@ -241,6 +247,18 @@ export default function CrazySMPStore() {
     }
   }, [username]);
 
+  // Preload all images on mount so menu navigation is instant
+  useEffect(() => {
+    const imagesToPreload = [
+      LOGO, BG, LOGIN_BG, "/steve-face.png",
+      ...PACKAGES.map((p) => p.img),
+    ];
+    imagesToPreload.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
   return (
     <div style={{ fontFamily: "'Nunito', sans-serif", background: "#141019", color: "#fff", minHeight: "100vh", maxWidth: 480, margin: "0 auto", position: "relative", overflow: "hidden" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;700;800;900&display=swap'); * { box-sizing: border-box; } @keyframes portalGlow { 0%, 100% { filter: drop-shadow(0 0 18px rgba(34,211,238,0.5)) drop-shadow(0 0 40px rgba(34,211,238,0.3)); } 50% { filter: drop-shadow(0 0 28px rgba(34,211,238,0.8)) drop-shadow(0 0 60px rgba(34,211,238,0.5)); } } .csmp-pkg-card:active { transform: scale(0.98); } .csmp-btn:active { transform: scale(0.97); }`}</style>
@@ -278,42 +296,23 @@ export default function CrazySMPStore() {
         </div>
       </div>
 
-      {/* WELCOME */}
-      <div style={{ padding: "34px 20px 8px" }}>
-        <div style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 13, color: "#22D3EE", letterSpacing: 1, marginBottom: 6 }}>Welcome to the official</div>
-        <h2 style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 30, color: "#22D3EE", margin: "0 0 16px" }}>CrazySMP Store</h2>
-        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: 15, lineHeight: 1.6, color: "rgba(255,255,255,0.75)", margin: 0 }}>CrazySMP is a free-to-play public Minecraft server. Items purchased here support the server and grant special perks in-game.</p>
-      </div>
-
-      {/* SUPPORT — Discord logo + text */}
-      <div style={{ padding: "30px 20px 8px" }}>
-        <h3 style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 22, color: "#22D3EE", margin: "0 0 14px" }}>Support</h3>
-        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: 15, lineHeight: 1.6, color: "rgba(255,255,255,0.75)", margin: "0 0 18px" }}>Need help? Open a support ticket on Discord, or email <a href="mailto:contact@crazysmp.bond" style={{ color: "#22D3EE" }}>contact@crazysmp.bond</a></p>
-        <a href={DISCORD_URL} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#5865F2", border: "none", borderRadius: 10, padding: "14px 24px", color: "#fff", fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: 15, cursor: "pointer", textDecoration: "none" }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-          Discord
-        </a>
-      </div>
-
-      {/* REFUND POLICY */}
-      <div style={{ padding: "30px 20px 8px" }}>
-        <h3 style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 22, color: "#e0596a", margin: "0 0 14px" }}>Refund Policy</h3>
-        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: 15, lineHeight: 1.6, color: "rgba(255,255,255,0.75)", margin: "0 0 14px" }}>All payments are final and non-refundable. Chargebacks = <strong style={{ color: "#fff" }}>permanent ban</strong>.</p>
-        <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: 15, lineHeight: 1.6, color: "rgba(255,255,255,0.75)", margin: 0 }}>Purchases credited within 1–20 minutes. Open a ticket if delayed.</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
-          <button className="csmp-btn" onClick={() => setShowTerms(true)} style={{ background: "rgba(34,211,238,0.12)", border: "1px solid rgba(34,211,238,0.4)", borderRadius: 10, padding: "13px 16px", color: "#67E8F9", fontFamily: "'Baloo 2', sans-serif", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Terms and Conditions</button>
-          <button className="csmp-btn" onClick={() => setShowPrivacy(true)} style={{ background: "rgba(34,211,238,0.12)", border: "1px solid rgba(34,211,238,0.4)", borderRadius: 10, padding: "13px 16px", color: "#67E8F9", fontFamily: "'Baloo 2', sans-serif", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Privacy Policy</button>
-        </div>
-      </div>
-
-      {/* FOOTER */}
-      <div style={{ padding: "10px 20px 34px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      {/* FOOTER — store-only page, just credits + text-only Terms/Privacy links */}
+      <div style={{ padding: "24px 20px 34px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ fontFamily: "'Baloo 2', sans-serif", fontSize: 14, color: "rgba(255,255,255,0.6)", marginTop: 16 }}>Copyright &copy; CrazySMP 2026. All Rights Reserved.</div>
         <div style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>We are not affiliated with Mojang AB.</div>
+        <div style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 10, lineHeight: 1.6 }}>
+          By using our store you agree to our{" "}
+          <a onClick={() => setShowTerms(true)} style={{ color: "rgba(34,211,238,0.7)", cursor: "pointer", textDecoration: "underline" }}>Terms</a>{" "}
+          and{" "}
+          <a onClick={() => setShowPrivacy(true)} style={{ color: "rgba(34,211,238,0.7)", cursor: "pointer", textDecoration: "underline" }}>Privacy Policy</a>.
+        </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 14, color: "rgba(255,255,255,0.3)", fontSize: 12, fontFamily: "'Inter', sans-serif" }}>
           <ShieldCheck size={14} /> Checkout secured by a trusted payment processor
         </div>
       </div>
+
+      {/* Floating Discord button (circular, blur popup, scroll hide/show) */}
+      <DiscordFab />
 
       <FullScreenLogin open={showLogin} onClose={() => setShowLogin(false)} onLogin={(name) => setUsername(name)} />
       <PackageModal open={!!modalPkg} onClose={() => setModalPkg(null)} pkg={modalPkg} username={username} />
