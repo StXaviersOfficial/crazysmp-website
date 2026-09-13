@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { X, Check } from "lucide-react";
+import { ExperimentalMode, ExperimentalToolbar } from "@/components/experimental-mode";
 
 const LOGIN_BG = "/login-bg.png";
 const LOGO = "/store-logo-new.webp";
@@ -35,7 +36,7 @@ export default function LoginPage() {
     }
   }, []);
 
-  const goBack = () => router.push("/");
+  const goBack = () => router.push("/store");
 
   const toggleBedrock = () => {
     setBedrock((prev) => {
@@ -53,7 +54,7 @@ export default function LoginPage() {
     const clean = username.trim();
     if (!clean || clean === ".") return;
     localStorage.setItem("crazysmp_username", clean);
-    router.push("/");
+    router.push("/store");
   };
 
   // Coordinates measured directly from login-bg.png (450x800) via pixel
@@ -64,88 +65,101 @@ export default function LoginPage() {
   const BOX3 = { left: 13.78, top: 72.375, width: 72.9, height: 7.875 }; // continue
 
   return (
-    <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#0a0612" }}>
-      <style>{`
-        @import url('https://fonts.cdnfonts.com/css/minecraft-4');
-        html, body { overflow: hidden !important; height: 100%; overscroll-behavior: none; }
-        .csmp-login-mobile { display: flex; }
-        .csmp-login-desktop { display: none; }
-        @media (min-width: 900px) {
-          .csmp-login-mobile { display: none; }
-          .csmp-login-desktop { display: flex; }
-        }
-        .csmp-login-input::placeholder { color: rgba(255,255,255,0.35); }
-        .csmp-login-continue:active { transform: scale(0.97); }
-      `}</style>
+    <ExperimentalMode>
+      <div className="csmp-root" style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#000000" }}>
+        <style>{`
+          @import url('https://fonts.cdnfonts.com/css/minecraft-4');
+          html, body { overflow: hidden !important; height: 100%; overscroll-behavior: none; }
+          .csmp-login-mobile { display: flex; }
+          .csmp-login-desktop { display: none; }
+          @media (min-width: 900px) {
+            .csmp-login-mobile { display: none; }
+            .csmp-login-desktop { display: flex; }
+          }
+          .csmp-login-input::placeholder { color: rgba(255,255,255,0.35); }
+          .csmp-login-continue:active { transform: scale(0.97); }
+        `}</style>
 
-      <button
-        onClick={goBack}
-        style={{
-          position: "fixed",
-          top: 20,
-          right: 20,
-          background: "rgba(255,255,255,0.1)",
-          border: "1px solid rgba(255,255,255,0.2)",
-          borderRadius: 50,
-          width: 40,
-          height: 40,
-          color: "rgba(255,255,255,0.6)",
-          cursor: "pointer",
-          zIndex: 10,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        aria-label="Close"
-      >
-        <X size={20} />
-      </button>
+        {/* Experimental toolbar (top-left, so it doesn't overlap the close button) */}
+        <div style={{ position: "fixed", top: 20, left: 20, zIndex: 11 }}>
+          <ExperimentalToolbar />
+        </div>
+
+        <button
+          onClick={goBack}
+          style={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            background: "rgba(255,255,255,0.1)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            borderRadius: 50,
+            width: 40,
+            height: 40,
+            color: "rgba(255,255,255,0.6)",
+            cursor: "pointer",
+            zIndex: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          aria-label="Close"
+        >
+          <X size={20} />
+        </button>
 
       {/* ============ MOBILE: exact pixel-overlay design on login-bg.png ============ */}
       <div className="csmp-login-mobile" style={{ position: "absolute", inset: 0, alignItems: "center", justifyContent: "center" }}>
         {/* Blurred backdrop fills any letterbox gaps left by object-fit:contain
-            instead of showing flat black bars when the viewport ratio doesn't
-            match the artwork's 450:800 ratio. */}
+            — increased blur for a softer, more atmospheric fill. */}
         <div
           style={{
             position: "absolute",
-            inset: -30,
+            inset: -40,
             backgroundImage: `url(${LOGIN_BG})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "blur(38px) brightness(0.5) saturate(1.25)",
-            transform: "scale(1.15)",
+            filter: "blur(48px) brightness(0.45) saturate(1.3)",
+            transform: "scale(1.2)",
           }}
         />
-        <div style={{ position: "absolute", inset: 0, background: "rgba(5,3,10,0.32)" }} />
+        {/* Solid black overlay so the letterbox areas are pure black */}
+        <div style={{ position: "absolute", inset: 0, background: "#000000" }} />
 
         <div style={{ position: "relative", height: "min(100dvh, 177.78vw)", aspectRatio: "450 / 800", maxWidth: "100%", maxHeight: "100dvh" }}>
           <img src={LOGIN_BG} alt="Login" style={{ width: "100%", height: "100%", display: "block", objectFit: "contain" }} />
 
-          {/* Top blur fade — thin (~3% of viewport, roughly 0.5cm on a phone),
-              subtle black fade to blend the image edge with the dark background.
-              No heavy blur — just enough to smooth the transition. */}
+          {/* Circular vignette overlay — symmetrical darkening at ALL edges (top, bottom, left, right)
+              fading to transparent in the center. Replaces the thin rectangular strips. */}
           <div
             style={{
               position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: "3%",
-              background: "linear-gradient(180deg, rgba(10,6,18,0.85) 0%, rgba(10,6,18,0) 100%)",
+              inset: 0,
+              background: "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.85) 100%)",
               pointerEvents: "none",
               zIndex: 2,
             }}
           />
-          {/* Bottom blur fade — thin (~3%), same subtle fade at the bottom edge */}
+          {/* Top blur strip — thicker (8%), fades from solid black to transparent */}
           <div
             style={{
               position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: "3%",
-              background: "linear-gradient(0deg, rgba(10,6,18,0.85) 0%, rgba(10,6,18,0) 100%)",
+              top: 0, left: 0, right: 0, height: "8%",
+              background: "linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+              pointerEvents: "none",
+              zIndex: 2,
+            }}
+          />
+          {/* Bottom blur strip — thicker (8%), fades from solid black to transparent */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0, left: 0, right: 0, height: "8%",
+              background: "linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
               pointerEvents: "none",
               zIndex: 2,
             }}
@@ -364,5 +378,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+    </ExperimentalMode>
   );
 }

@@ -2,26 +2,27 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { Pencil, Download, Check, X, Type, Move, Image as ImageIcon } from "lucide-react";
+import { Pencil, Download, Check, Trash2 } from "lucide-react";
 
 /**
- * ExperimentalMode — full visual editor for the CrazySMP store page.
+ * ExperimentalMode — Canva-style visual editor.
  *
- * When EDIT is active:
- *   - ALL clicks inside .csmp-root are disabled EXCEPT:
- *     - [data-editable] elements (selectable + editable)
- *     - .csmp-steve-logo (navigates to /login)
- *     - .csmp-toolbar (the EDIT/EXPORT buttons themselves)
- *   - Click any [data-editable] element to SELECT it
- *   - Selected element shows cyan outline + EditorPanel at bottom of screen
- *   - DRAG selected element to move (transform: translate)
- *   - EditorPanel controls: Position X/Y, Size W/H
- *   - For text: Font Size, Color, "EDIT TEXT" toggle (contentEditable)
- *   - For images: Width/Height controls
+ * Persists edit state across route changes via localStorage + custom event,
+ * so navigating from /store to /login keeps edit mode active.
  *
- * EXPORT serializes .csmp-root.outerHTML with all inline style overrides
- * baked in, downloads as crazysmp-edited-<timestamp>.html.
+ * Selected element gets:
+ *   - 8 resize handles (4 corners + 4 sides)
+ *   - Drag from middle = move
+ *   - Pinch (two-finger) = uniform scale
+ *   - Delete button to remove element
+ *   - "EDIT TEXT" button for text elements
+ *
+ * Click handling:
+ *   - ALL clicks inside .csmp-root disabled EXCEPT:
+ *     [data-editable], .csmp-steve-logo, .csmp-toolbar
  */
+
+const STORAGE_KEY = "csmp_edit_mode";
 
 type ExperimentalState = {
   editMode: boolean;
@@ -42,9 +43,30 @@ export function ExperimentalMode({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => setMounted(true), []);
 
+  // Read persisted edit state on mount (so navigation between routes keeps it)
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem(STORAGE_KEY) === "1";
+    if (saved) setEditMode(true);
+  }, []);
+
+  // Listen for cross-page edit-mode changes
+  React.useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        setEditMode(e.newValue === "1");
+      }
+    };
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, []);
+
   const toggle = React.useCallback(() => {
-    setEditMode((p) => {
-      const next = !p;
+    setEditMode((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
+      }
       if (!next) {
         document.querySelectorAll(".csmp-selected").forEach((el) => {
           el.classList.remove("csmp-selected");
@@ -64,7 +86,7 @@ export function ExperimentalMode({ children }: { children: React.ReactNode }) {
       alert("Nothing to export — .csmp-root not found.");
       return;
     }
-    // Clean up editable state before serializing
+    // Clean up
     const editables = root.querySelectorAll("[contenteditable]");
     editables.forEach((el) => el.removeAttribute("contenteditable"));
     const selected = root.querySelectorAll(".csmp-selected, .csmp-text-editing");
@@ -72,6 +94,8 @@ export function ExperimentalMode({ children }: { children: React.ReactNode }) {
       el.classList.remove("csmp-selected");
       el.classList.remove("csmp-text-editing");
     });
+    // Remove editor-injected handles
+    root.querySelectorAll(".csmp-handle").forEach((el) => el.remove());
 
     const html = root.outerHTML;
     const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
@@ -109,15 +133,13 @@ ${html}
 
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Skip toolbar, editor panel, and Steve logo
-      if (target.closest(".csmp-toolbar") || target.closest(".csmp-editor-panel")) return;
+      if (target.closest(".csmp-toolbar") || target.closest(".csmp-editor-panel") || target.closest(".csmp-handle")) return;
       if (target.closest(".csmp-steve-logo")) return;
 
       const editable = target.closest("[data-editable]");
       if (editable) {
         e.preventDefault();
         e.stopPropagation();
-        // Clear previous selection
         document.querySelectorAll(".csmp-selected").forEach((el) => {
           el.classList.remove("csmp-selected");
           (el as HTMLElement).contentEditable = "false";
@@ -136,12 +158,10 @@ ${html}
     };
 
     document.addEventListener("click", handler, true);
-    return () => {
-      document.removeEventListener("click", handler, true);
-    };
+    return () => document.removeEventListener("click", handler, true);
   }, [editMode]);
 
-  // Toggle body class
+  // Body class toggle
   React.useEffect(() => {
     if (typeof document === "undefined") return;
     document.body.classList.toggle("csmp-editing-active", editMode);
@@ -150,29 +170,29 @@ ${html}
   return (
     <ExperimentalContext.Provider value={{ editMode, toggle, exportHtml }}>
       <style>{`
-        /* Disable ALL interactions inside .csmp-root when editing */
         body.csmp-editing-active .csmp-root * {
           pointer-events: none;
         }
-        /* Re-enable: editable elements, Steve logo, toolbar */
         body.csmp-editing-active .csmp-root [data-editable],
         body.csmp-editing-active .csmp-root .csmp-steve-logo,
         body.csmp-editing-active .csmp-toolbar,
-        body.csmp-editing-active .csmp-toolbar * {
+        body.csmp-editing-active .csmp-toolbar *,
+        body.csmp-editing-active .csmp-editor-panel,
+        body.csmp-editing-active .csmp-editor-panel *,
+        body.csmp-editing-active .csmp-handle,
+        body.csmp-editing-active .csmp-handle * {
           pointer-events: auto;
         }
-        /* Visual feedback on editable elements */
         body.csmp-editing-active [data-editable] {
           cursor: move;
           outline-offset: 2px;
-          transition: outline 0.1s ease;
         }
         body.csmp-editing-active [data-editable]:hover {
           outline: 2px dashed rgba(34,211,238,0.5);
         }
         body.csmp-editing-active .csmp-selected {
           outline: 2px solid #22D3EE !important;
-          outline-offset: 2px;
+          outline-offset: 0px;
         }
         body.csmp-editing-active .csmp-selected.csmp-text-editing {
           cursor: text;
@@ -180,35 +200,36 @@ ${html}
       `}</style>
       {children}
       {mounted && editMode && selectedEl && createPortal(
-        <EditorPanel element={selectedEl} onDeselect={() => setSelectedEl(null)} />,
+        <SelectionOverlay element={selectedEl} onDeselect={() => setSelectedEl(null)} />,
         document.body
       )}
     </ExperimentalContext.Provider>
   );
 }
 
-function EditorPanel({ element, onDeselect }: { element: HTMLElement; onDeselect: () => void }) {
-  const [pos, setPos] = React.useState({ x: 0, y: 0 });
-  const [size, setSize] = React.useState({ w: 0, h: 0 });
-  const [fontSize, setFontSize] = React.useState(16);
-  const [color, setColor] = React.useState("#ffffff");
-  const [isText, setIsText] = React.useState(false);
+/**
+ * SelectionOverlay — renders 8 resize handles + move/delete/text controls
+ * around the selected element. Tracks element position via getBoundingClientRect
+ * on every animation frame so it stays glued during scroll/resize.
+ */
+function SelectionOverlay({ element, onDeselect }: { element: HTMLElement; onDeselect: () => void }) {
+  const [rect, setRect] = React.useState<DOMRect | null>(null);
   const [textEditing, setTextEditing] = React.useState(false);
+  const [isText, setIsText] = React.useState(false);
 
-  // Initialize from element
+  // Track element position
   React.useEffect(() => {
-    const computed = window.getComputedStyle(element);
-    const rect = element.getBoundingClientRect();
-    const transform = element.style.transform || "";
-    const match = transform.match(/translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/);
-    const tx = match ? parseFloat(match[1]) : 0;
-    const ty = match ? parseFloat(match[2]) : 0;
+    let raf: number;
+    const update = () => {
+      setRect(element.getBoundingClientRect());
+      raf = requestAnimationFrame(update);
+    };
+    update();
+    return () => cancelAnimationFrame(raf);
+  }, [element]);
 
-    setPos({ x: Math.round(tx), y: Math.round(ty) });
-    setSize({ w: Math.round(rect.width), h: Math.round(rect.height) });
-    setFontSize(parseInt(computed.fontSize) || 16);
-    setColor(rgbToHex(computed.color));
-
+  // Detect text vs image
+  React.useEffect(() => {
     const editType = element.getAttribute("data-edit-type");
     const tag = element.tagName;
     setIsText(
@@ -218,20 +239,17 @@ function EditorPanel({ element, onDeselect }: { element: HTMLElement; onDeselect
     );
   }, [element]);
 
-  // Drag-to-move (disabled when text editing is active)
+  // Drag-to-move (middle of element)
   React.useEffect(() => {
     if (textEditing) return;
-
     let dragging = false;
     let startX = 0, startY = 0;
     let startTX = 0, startTY = 0;
 
     const onMouseDown = (e: MouseEvent) => {
-      // Only start drag if clicking on the selected element itself
-      if (e.target !== element && !(e.target as HTMLElement).closest("[data-editable] === element")) {
-        // check if target IS the element
-        if (e.target !== element) return;
-      }
+      if (e.target !== element) return;
+      // Don't start drag if clicking a handle
+      if ((e.target as HTMLElement).classList.contains("csmp-handle")) return;
       dragging = true;
       startX = e.clientX;
       startY = e.clientY;
@@ -247,7 +265,6 @@ function EditorPanel({ element, onDeselect }: { element: HTMLElement; onDeselect
       const newX = Math.round(startTX + (e.clientX - startX));
       const newY = Math.round(startTY + (e.clientY - startY));
       element.style.transform = `translate(${newX}px, ${newY}px)`;
-      setPos({ x: newX, y: newY });
     };
 
     const onMouseUp = () => { dragging = false; };
@@ -256,34 +273,144 @@ function EditorPanel({ element, onDeselect }: { element: HTMLElement; onDeselect
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
 
+    // Touch support for mobile
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.target !== element) return;
+      if ((e.target as HTMLElement).classList.contains("csmp-handle")) return;
+      if (e.touches.length !== 1) return;
+      dragging = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      const transform = element.style.transform || "";
+      const match = transform.match(/translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/);
+      startTX = match ? parseFloat(match[1]) : 0;
+      startTY = match ? parseFloat(match[2]) : 0;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!dragging || e.touches.length !== 1) return;
+      e.preventDefault();
+      const newX = Math.round(startTX + (e.touches[0].clientX - startX));
+      const newY = Math.round(startTY + (e.touches[0].clientY - startY));
+      element.style.transform = `translate(${newX}px, ${newY}px)`;
+    };
+    const onTouchEnd = () => { dragging = false; };
+
+    element.addEventListener("touchstart", onTouchStart, { passive: false });
+    document.addEventListener("touchmove", onTouchMove, { passive: false });
+    document.addEventListener("touchend", onTouchEnd);
+
     return () => {
       element.removeEventListener("mousedown", onMouseDown);
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
+      element.removeEventListener("touchstart", onTouchStart);
+      document.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("touchend", onTouchEnd);
     };
   }, [element, textEditing]);
 
-  const updatePos = (axis: "x" | "y", value: number) => {
-    const newPos = { ...pos, [axis]: value };
-    setPos(newPos);
-    element.style.transform = `translate(${newPos.x}px, ${newPos.y}px)`;
-  };
+  // Pinch-to-zoom (two fingers on element)
+  React.useEffect(() => {
+    let initialDist = 0;
+    let initialScale = 1;
 
-  const updateSize = (dim: "w" | "h", value: number) => {
-    const newSize = { ...size, [dim]: value };
-    setSize(newSize);
-    if (dim === "w") element.style.width = `${value}px`;
-    else element.style.height = `${value}px`;
-  };
+    const getScale = (el: HTMLElement) => {
+      const t = el.style.transform || "";
+      const m = t.match(/scale\(([\d.]+)\)/);
+      return m ? parseFloat(m[1]) : 1;
+    };
 
-  const updateFontSize = (value: number) => {
-    setFontSize(value);
-    element.style.fontSize = `${value}px`;
-  };
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 2) return;
+      if (e.target !== element && !(e.target as HTMLElement).closest("[data-editable]") === element) {
+        if (e.target !== element) return;
+      }
+      initialDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      initialScale = getScale(element);
+      e.preventDefault();
+    };
 
-  const updateColor = (value: string) => {
-    setColor(value);
-    element.style.color = value;
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2 || initialDist === 0) return;
+      e.preventDefault();
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const scale = Math.max(0.2, Math.min(5, initialScale * (dist / initialDist)));
+      // Merge with existing translate
+      const t = element.style.transform || "";
+      const translateMatch = t.match(/translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/);
+      const tx = translateMatch ? translateMatch[1] : "0";
+      const ty = translateMatch ? translateMatch[2] : "0";
+      element.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    };
+
+    const onTouchEnd = () => { initialDist = 0; };
+
+    element.addEventListener("touchstart", onTouchStart, { passive: false });
+    element.addEventListener("touchmove", onTouchMove, { passive: false });
+    element.addEventListener("touchend", onTouchEnd);
+
+    return () => {
+      element.removeEventListener("touchstart", onTouchStart);
+      element.removeEventListener("touchmove", onTouchMove);
+      element.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [element]);
+
+  if (!rect) return null;
+
+  // Handle resize logic
+  const startResize = (e: React.MouseEvent | React.TouchEvent, handle: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const point = "touches" in e ? e.touches[0] : e as React.MouseEvent;
+    const startX = point.clientX;
+    const startY = point.clientY;
+    const startW = element.offsetWidth;
+    const startH = element.offsetHeight;
+    const transform = element.style.transform || "";
+    const match = transform.match(/translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/);
+    const startTX = match ? parseFloat(match[1]) : 0;
+    const startTY = match ? parseFloat(match[2]) : 0;
+
+    const onMove = (ev: MouseEvent | TouchEvent) => {
+      const p = "touches" in ev ? ev.touches[0] : ev as MouseEvent;
+      const dx = p.clientX - startX;
+      const dy = p.clientY - startY;
+      let newW = startW, newH = startH, newTX = startTX, newTY = startTY;
+
+      if (handle.includes("e")) newW = Math.max(20, startW + dx);
+      if (handle.includes("s")) newH = Math.max(20, startH + dy);
+      if (handle.includes("w")) {
+        newW = Math.max(20, startW - dx);
+        newTX = startTX + dx;
+      }
+      if (handle.includes("n")) {
+        newH = Math.max(20, startH - dy);
+        newTY = startTY + dy;
+      }
+
+      element.style.width = `${newW}px`;
+      element.style.height = `${newH}px`;
+      element.style.transform = `translate(${newTX}px, ${newTY}px)`;
+    };
+
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove as any);
+      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener("touchmove", onMove as any);
+      document.removeEventListener("touchend", onUp);
+    };
+
+    document.addEventListener("mousemove", onMove as any);
+    document.addEventListener("mouseup", onUp);
+    document.addEventListener("touchmove", onMove as any, { passive: false });
+    document.addEventListener("touchend", onUp);
   };
 
   const toggleTextEditing = () => {
@@ -293,7 +420,6 @@ function EditorPanel({ element, onDeselect }: { element: HTMLElement; onDeselect
     if (next) {
       element.classList.add("csmp-text-editing");
       element.focus();
-      // Place cursor at end
       const range = document.createRange();
       range.selectNodeContents(element);
       range.collapse(false);
@@ -306,6 +432,11 @@ function EditorPanel({ element, onDeselect }: { element: HTMLElement; onDeselect
     }
   };
 
+  const deleteElement = () => {
+    element.remove();
+    onDeselect();
+  };
+
   const close = () => {
     element.classList.remove("csmp-selected");
     element.contentEditable = "false";
@@ -313,94 +444,80 @@ function EditorPanel({ element, onDeselect }: { element: HTMLElement; onDeselect
     onDeselect();
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: 48,
-    background: "rgba(0,0,0,0.5)",
-    border: "1px solid rgba(34,211,238,0.3)",
-    borderRadius: 4,
-    padding: "3px 5px",
-    color: "#fff",
-    fontSize: 12,
-    fontFamily: "monospace",
-    outline: "none",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: 9,
-    color: "#67E8F9",
-    fontWeight: 700,
-    fontFamily: "'Minecraft', monospace",
-  };
+  // Handle positions (relative to viewport)
+  const handleSize = 12;
+  const h = handleSize / 2;
+  const handles = [
+    { id: "nw", x: rect.left - h, y: rect.top - h, cursor: "nwse-resize" },
+    { id: "n",  x: rect.left + rect.width / 2 - h, y: rect.top - h, cursor: "ns-resize" },
+    { id: "ne", x: rect.right - h, y: rect.top - h, cursor: "nesw-resize" },
+    { id: "e",  x: rect.right - h, y: rect.top + rect.height / 2 - h, cursor: "ew-resize" },
+    { id: "se", x: rect.right - h, y: rect.bottom - h, cursor: "nwse-resize" },
+    { id: "s",  x: rect.left + rect.width / 2 - h, y: rect.bottom - h, cursor: "ns-resize" },
+    { id: "sw", x: rect.left - h, y: rect.bottom - h, cursor: "nesw-resize" },
+    { id: "w",  x: rect.left - h, y: rect.top + rect.height / 2 - h, cursor: "ew-resize" },
+  ];
 
   return (
-    <div className="csmp-editor-panel" style={{
-      position: "fixed",
-      bottom: 16,
-      left: "50%",
-      transform: "translateX(-50%)",
-      background: "rgba(15,10,22,0.97)",
-      border: "1px solid rgba(34,211,238,0.4)",
-      borderRadius: 12,
-      padding: "8px 12px",
-      display: "flex",
-      gap: 8,
-      alignItems: "center",
-      zIndex: 10000,
-      backdropFilter: "blur(12px)",
-      maxWidth: "95vw",
-      flexWrap: "wrap",
-      fontFamily: "'Minecraft', 'Inter', monospace",
-      boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-    }}>
-      {/* Close button */}
-      <button onClick={close} title="Deselect" style={{
-        background: "rgba(255,255,255,0.1)",
-        border: "1px solid rgba(255,255,255,0.2)",
-        borderRadius: 6,
-        padding: "4px 6px",
-        color: "rgba(255,255,255,0.6)",
-        cursor: "pointer",
+    <>
+      {/* Resize handles */}
+      {handles.map((hdl) => (
+        <div
+          key={hdl.id}
+          className="csmp-handle"
+          onMouseDown={(e) => startResize(e, hdl.id)}
+          onTouchStart={(e) => startResize(e, hdl.id)}
+          style={{
+            position: "fixed",
+            left: hdl.x,
+            top: hdl.y,
+            width: handleSize,
+            height: handleSize,
+            background: "#fff",
+            border: "2px solid #22D3EE",
+            borderRadius: 3,
+            cursor: hdl.cursor,
+            zIndex: 10001,
+            boxShadow: "0 0 6px rgba(34,211,238,0.6)",
+            touchAction: "none",
+          }}
+        />
+      ))}
+
+      {/* Editor panel */}
+      <div className="csmp-editor-panel" style={{
+        position: "fixed",
+        bottom: 16,
+        left: "50%",
+        transform: "translateX(-50%)",
+        background: "rgba(15,10,22,0.97)",
+        border: "1px solid rgba(34,211,238,0.4)",
+        borderRadius: 12,
+        padding: "8px 12px",
         display: "flex",
+        gap: 8,
         alignItems: "center",
+        zIndex: 10000,
+        backdropFilter: "blur(12px)",
+        maxWidth: "95vw",
+        flexWrap: "wrap",
+        fontFamily: "'Minecraft', 'Inter', monospace",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
       }}>
-        <X size={14} />
-      </button>
+        <button onClick={close} title="Deselect" style={{
+          background: "rgba(255,255,255,0.1)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: 6,
+          padding: "4px 6px",
+          color: "rgba(255,255,255,0.6)",
+          cursor: "pointer",
+          display: "flex",
+        }}>
+          <Check size={14} />
+        </button>
 
-      {/* Element type indicator */}
-      <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "0 4px" }}>
-        {isText ? <Type size={14} style={{ color: "#67E8F9" }} /> : <ImageIcon size={14} style={{ color: "#E879F9" }} />}
-        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>
-          {isText ? "TEXT" : "IMAGE"}
-        </span>
-      </div>
-
-      {/* Position */}
-      <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
-        <span style={labelStyle}>X</span>
-        <input type="number" value={pos.x} onChange={(e) => updatePos("x", parseInt(e.target.value) || 0)} style={inputStyle} />
-        <span style={labelStyle}>Y</span>
-        <input type="number" value={pos.y} onChange={(e) => updatePos("y", parseInt(e.target.value) || 0)} style={inputStyle} />
-      </div>
-
-      {/* Size */}
-      <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
-        <span style={labelStyle}>W</span>
-        <input type="number" value={size.w} onChange={(e) => updateSize("w", parseInt(e.target.value) || 0)} style={inputStyle} />
-        <span style={labelStyle}>H</span>
-        <input type="number" value={size.h} onChange={(e) => updateSize("h", parseInt(e.target.value) || 0)} style={inputStyle} />
-      </div>
-
-      {/* Text-specific controls */}
-      {isText && (
-        <>
-          <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
-            <span style={labelStyle}>SIZE</span>
-            <input type="number" value={fontSize} onChange={(e) => updateFontSize(parseInt(e.target.value) || 16)} style={{ ...inputStyle, width: 38 }} />
-          </div>
-          <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
-            <span style={labelStyle}>COLOR</span>
-            <input type="color" value={color} onChange={(e) => updateColor(e.target.value)} style={{ width: 28, height: 24, border: "none", borderRadius: 4, cursor: "pointer", background: "none" }} />
-          </div>
+        {/* Text editing toggle (only for text elements) */}
+        {isText && (
           <button onClick={toggleTextEditing} title="Toggle text editing" style={{
             display: "flex",
             alignItems: "center",
@@ -415,26 +532,37 @@ function EditorPanel({ element, onDeselect }: { element: HTMLElement; onDeselect
             fontWeight: 700,
             fontFamily: "'Minecraft', monospace",
           }}>
-            {textEditing ? <Check size={12} /> : <Type size={12} />}
+            {textEditing ? <Check size={12} /> : <Pencil size={12} />}
             {textEditing ? "DONE" : "TEXT"}
           </button>
-        </>
-      )}
+        )}
 
-      {/* Drag hint */}
-      {!textEditing && (
-        <div style={{ display: "flex", alignItems: "center", gap: 3, color: "rgba(255,255,255,0.3)", fontSize: 9 }}>
-          <Move size={11} /> DRAG TO MOVE
+        {/* Delete button */}
+        <button onClick={deleteElement} title="Delete element" style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+          background: "rgba(220,38,38,0.15)",
+          border: "1px solid rgba(220,38,38,0.6)",
+          borderRadius: 6,
+          padding: "4px 8px",
+          color: "#FCA5A5",
+          cursor: "pointer",
+          fontSize: 10,
+          fontWeight: 700,
+          fontFamily: "'Minecraft', monospace",
+        }}>
+          <Trash2 size={12} />
+          DELETE
+        </button>
+
+        {/* Hint */}
+        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 9 }}>
+          {textEditing ? "TYPE TO EDIT TEXT" : "DRAG TO MOVE · PINCH TO ZOOM · HANDLES TO RESIZE"}
         </div>
-      )}
-    </div>
+      </div>
+    </>
   );
-}
-
-function rgbToHex(rgb: string): string {
-  const match = rgb.match(/\d+/g);
-  if (!match || match.length < 3) return "#ffffff";
-  return "#" + match.slice(0, 3).map((n) => parseInt(n).toString(16).padStart(2, "0")).join("");
 }
 
 export function ExperimentalToolbar() {
@@ -444,17 +572,13 @@ export function ExperimentalToolbar() {
       <button
         onClick={toggle}
         aria-label={editMode ? "Exit edit mode" : "Enter edit mode"}
-        title={editMode ? "Exit experimental edit mode" : "Experimental edit mode — click any element to select, drag to move, use panel to resize"}
+        title={editMode ? "Exit experimental edit mode" : "Experimental edit mode — click any element to select, drag to move, pinch to zoom, handles to resize"}
         style={{
           display: "inline-flex",
           alignItems: "center",
           gap: 6,
-          background: editMode
-            ? "linear-gradient(135deg,#22D3EE,#0891B2)"
-            : "rgba(34,211,238,0.12)",
-          border: editMode
-            ? "1px solid rgba(34,211,238,0.9)"
-            : "1px solid rgba(34,211,238,0.4)",
+          background: editMode ? "linear-gradient(135deg,#22D3EE,#0891B2)" : "rgba(34,211,238,0.12)",
+          border: editMode ? "1px solid rgba(34,211,238,0.9)" : "1px solid rgba(34,211,238,0.4)",
           borderRadius: 8,
           padding: "8px 12px",
           color: editMode ? "#0a0812" : "#67E8F9",
