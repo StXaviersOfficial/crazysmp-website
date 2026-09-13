@@ -1,47 +1,33 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CrazySMP — Minecraft SMP Season 4",
-  description: "A heavily customized vanilla+ Minecraft SMP where creativity meets chaos. Build your kingdom, forge alliances, and write your legacy.",
-  keywords: ["CrazySMP", "Minecraft", "SMP", "Survival", "Multiplayer", "Season 4", "Vanilla+"],
+  title: "CrazySMP — Store",
+  description: "Official CrazySMP Store — Ranks, Keys, and more.",
+  keywords: ["CrazySMP", "Minecraft", "SMP", "Store", "Ranks", "Keys"],
   authors: [{ name: "CrazyAnishXD" }],
   openGraph: {
-    title: "CrazySMP — Minecraft SMP Season 4",
-    description: "Build your kingdom, forge alliances, and write your legacy.",
-    url: "https://www.crazysmp.bond",
+    title: "CrazySMP — Store",
+    description: "Official CrazySMP Store",
+    url: "https://crazysmp.vercel.app",
     siteName: "CrazySMP",
     type: "website",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "CrazySMP — Minecraft SMP Season 4",
-    description: "Build your kingdom, forge alliances, and write your legacy.",
-  },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
-      >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+      </head>
+      <body className={`${inter.variable} antialiased bg-background text-foreground`}>
         {children}
         <Toaster />
       </body>

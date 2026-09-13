@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollProgress, CustomCursor } from "@/components/motion-primitives";
 import { NoiseOverlay } from "@/components/noise-overlay";
+import { ShieldCheck } from "lucide-react";
 
 const SERVER_IP = "crazysmp.bond";
 const DISCORD_URL = "https://discord.gg/GFzAeUj7TJ";
@@ -62,7 +63,7 @@ export default function Home() {
 
       {/* Header splash background */}
       <div className="header-splash">
-        <img src="/mc-bg.png" alt="" />
+        <img src="/new-image.jpg" alt="" />
         <div className="splash-gradient" />
       </div>
 
@@ -88,7 +89,7 @@ export default function Home() {
 
             {/* Widgets */}
             <div className="store-widgets">
-              <div className="store-widget">
+              <div className="store-widget" style={{ cursor: "pointer" }} onClick={copyIP}>
                 <div className="widget-icon">
                   <span className="player-count">{serverOnline ? playerCount : "..."}</span>
                   <span style={{ fontSize: "20px" }}>🔥</span>
@@ -98,7 +99,7 @@ export default function Home() {
                   <p className="widget-description">{copied ? "Copied!" : "click to copy"}</p>
                 </div>
               </div>
-              <a className="store-widget" href={DISCORD_URL} target="_blank" rel="noreferrer" style={{ cursor: "pointer" }} onClick={(e) => { e.preventDefault(); copyIP(); }}>
+              <a className="store-widget" href={DISCORD_URL} target="_blank" rel="noreferrer" style={{ cursor: "pointer" }}>
                 <div>
                   <p className="widget-title">Discord Server</p>
                   <p className="widget-description">click to join</p>
@@ -198,18 +199,55 @@ export default function Home() {
               <p style={{ color: "var(--secondary-text-color)", fontSize: "14px", lineHeight: 1.6 }}>
                 All payments are final and non-refundable. Attempting a chargeback or opening a PayPal dispute will result in
                 permanent and irreversible banishment from all of our servers. Payments are secured by our payment processor.
-                It could take between 1-20 minutes for your purchase to be credited in-game. If you are still not credited
-                after this time period, please open a support ticket on Discord with proof of purchase.
+                It could take between 1-20 minutes for your purchase to be credited in-game.
               </p>
             </div>
           </main>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="footer-copyright">
-        <p>Copyright © CrazySMP 2026. All Rights Reserved.</p>
-        <p>We are not affiliated with Mojang AB.</p>
+      {/* Footer — EXACT code from user */}
+      <footer
+        style={{
+          textAlign: "center",
+          padding: "24px 16px",
+          marginTop: "auto",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "'Baloo 2', sans-serif",
+            fontSize: 14,
+            color: "rgba(255,255,255,0.6)",
+            marginTop: 16,
+          }}
+        >
+          Copyright &copy; CrazySMP 2026. All Rights Reserved.
+        </div>
+        <div
+          style={{
+            fontFamily: "'Nunito', sans-serif",
+            fontSize: 12,
+            color: "rgba(255,255,255,0.35)",
+            marginTop: 4,
+          }}
+        >
+          We are not affiliated with Mojang AB.
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            marginTop: 14,
+            color: "rgba(255,255,255,0.3)",
+            fontSize: 12,
+          }}
+        >
+          <ShieldCheck size={14} />
+          Checkout secured by a trusted payment processor
+        </div>
       </footer>
     </div>
   );
