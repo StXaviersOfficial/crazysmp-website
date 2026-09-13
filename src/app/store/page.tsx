@@ -7,7 +7,7 @@ import { DiscordFab } from "@/components/discord-fab";
 
 const LOGO = "/store-logo-new.webp";
 const BG = "/crazysmp-bg-new.webp";
-const LOGIN_BG = "/login-bg.png";
+const LOGIN_BG = "/login-bg.webp";
 const DISCORD_URL = "https://discord.gg/GFzAeUj7TJ";
 
 // Minecraft font family — applied to every text element on the page.
@@ -20,16 +20,16 @@ const NORMAL = "'Inter', system-ui, -apple-system, sans-serif";
 const PACKAGES = [
   // Ranks: bonus is now a tier image index (1-6) + a diamond badge.
   // Keys: bonus is a rarity word (COMMON/RARE/EPIC) — no tier badge.
-  { id: "vip",       name: "VIP Rank",       tier: 1, price: "₹29",    tone: "cyan",    img: "/pkg-vip.png",        isKey: false },
-  { id: "legend",    name: "LEGEND Rank",    tier: 2, price: "₹69",    tone: "gold",    img: "/pkg-legend.png",     isKey: false },
-  { id: "immortal",  name: "IMMORTAL Rank",  tier: 3, price: "₹119",   tone: "indigo",  img: "/pkg-immortal.png",   isKey: false },
-  { id: "titan",     name: "TITAN Rank",     tier: 4, price: "₹179",   tone: "fire",    img: "/pkg-titan.png",      isKey: false },
-  { id: "techno",   name: "TECHNO Rank",    tier: 5, price: "₹239",   tone: "green",   img: "/pkg-techno.png",     isKey: false },
-  { id: "crazy",     name: "CRAZY Rank",     tier: 6, price: "₹299",   tone: "magenta", img: "/pkg-crazy.png",      isKey: false },
-  // 3-way rotation: Spawner←Crazy, Crazy←Mega, Mega←Spawner (img + tone only)
-  { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹99",  tone: "green",   img: "/pkg-crazy-key.png",   isKey: true },
-  { id: "mega-key",    name: "Mega Key",    bonus: "RARE",   price: "₹299", tone: "cyan",    img: "/pkg-spawner-key.png", isKey: true },
-  { id: "crazy-key",   name: "Crazy Key",   bonus: "EPIC",   price: "₹499", tone: "magenta", img: "/pkg-mega-key.png",    isKey: true },
+  { id: "vip",       name: "VIP Rank",       tier: 1, price: "₹29",    tone: "cyan",    img: "/pkg-vip.webp",        isKey: false },
+  { id: "legend",    name: "LEGEND Rank",    tier: 2, price: "₹69",    tone: "gold",    img: "/pkg-legend.webp",     isKey: false },
+  { id: "immortal",  name: "IMMORTAL Rank",  tier: 3, price: "₹119",   tone: "indigo",  img: "/pkg-immortal.webp",   isKey: false },
+  { id: "titan",     name: "TITAN Rank",     tier: 4, price: "₹179",   tone: "fire",    img: "/pkg-titan.webp",      isKey: false },
+  { id: "techno",   name: "TECHNO Rank",    tier: 5, price: "₹239",   tone: "green",   img: "/pkg-techno.webp",     isKey: false },
+  { id: "crazy",     name: "CRAZY Rank",     tier: 6, price: "₹299",   tone: "magenta", img: "/pkg-crazy.webp",      isKey: false },
+  // Clean 1:1 name-to-file mapping now (new assets from the user, no more rotation)
+  { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹99",  tone: "green",   img: "/pkg-spawner-key.webp", isKey: true },
+  { id: "mega-key",    name: "Mega Key",    bonus: "RARE",   price: "₹299", tone: "cyan",    img: "/pkg-mega-key.webp",    isKey: true },
+  { id: "crazy-key",   name: "Crazy Key",   bonus: "EPIC",   price: "₹499", tone: "magenta", img: "/pkg-crazy-key.webp",   isKey: true },
 ];
 
 const TONES = {
@@ -41,6 +41,34 @@ const TONES = {
   magenta: { border: "#C026D3", bg: "linear-gradient(180deg, rgba(192,38,211,0.22), rgba(32,16,38,0.7))", text: "#E879F9" },
 };
 
+// The new logo art is tightly cropped to its actual crystal-splash silhouette
+// (transparent background, no padding) but each rank/key has a different
+// width:height ratio. Sizing by a fixed HEIGHT (not a fixed square box) means
+// every icon fills the box's full height with zero width cropping, and since
+// the art is wider than it is tall, it naturally bleeds a little past the
+// nominal footprint — the "crystals sticking out of the box" effect.
+function PkgIcon({ pkg, size = 60 }) {
+  return (
+    <div style={{ width: size, height: size, position: "relative", flexShrink: 0 }}>
+      <img
+        src={pkg.img}
+        alt={pkg.name}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          height: "100%",
+          width: "auto",
+          maxWidth: "none",
+          objectFit: "contain",
+          pointerEvents: "none",
+        }}
+      />
+    </div>
+  );
+}
+
 function PackageModal({ open, onClose, pkg, username }) {
   if (!open || !pkg) return null;
   const t = TONES[pkg.tone] || TONES.cyan;
@@ -50,8 +78,8 @@ function PackageModal({ open, onClose, pkg, username }) {
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", padding: 4 }}><X size={20} /></button>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-          <img src={pkg.img} alt={pkg.name} style={{ width: 64, height: 64, borderRadius: 14, objectFit: "cover" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 20 }}>
+          <PkgIcon pkg={pkg} size={54} />
           <div>
             <h3 style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: t.text, margin: 0 }}>{pkg.name}</h3>
             <p style={{ fontFamily: NORMAL, color: "rgba(255,255,255,0.5)", fontSize: 14, margin: "2px 0 0" }}>
@@ -196,7 +224,7 @@ export default function CrazySMPStore() {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 16,
+                  gap: 22,
                   textAlign: "left",
                   background: t.bg,
                   border: `1.5px solid ${t.border}`,
@@ -208,7 +236,7 @@ export default function CrazySMPStore() {
                   ...keyShift,
                 }}
               >
-                <img src={pkg.img} alt={pkg.name} style={{ width: 72, height: 72, borderRadius: 14, flexShrink: 0, objectFit: "cover" }} />
+                <PkgIcon pkg={pkg} size={58} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: MC, fontSize: 18, fontWeight: 700, color: t.text, lineHeight: 1.25, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     {pkg.name}

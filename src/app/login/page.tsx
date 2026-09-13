@@ -1,12 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { X, Check } from "lucide-react";
+import { X } from "lucide-react";
 
-const LOGIN_BG = "/login-bg.png";
+const LOGIN_BG = "/login-bg.webp";
 const LOGO = "/store-logo-new.webp";
 const MC = "'Minecraft', 'Inter', monospace";
+
+// Intrinsic size of login-bg.webp — used to compute exact cover-fill math
+// below (not just for display, so don't change without re-measuring).
+const NATURAL_W = 941;
+const NATURAL_H = 1672;
+
+// Box coordinates measured directly from login-bg.webp via pixel color
+// sampling (percentage of the ORIGINAL image, not of any container) —
+// these get mapped into actual on-screen pixels by the cover-fit math.
+const BOX1 = { left: 15.73, top: 55.32, width: 69.08, height: 7.0 }; // username
+const BOX2 = { left: 15.73, top: 64.95, width: 69.08, height: 5.74 }; // bedrock toggle
+const BOX3 = { left: 15.73, top: 72.49, width: 69.08, height: 7.36 }; // continue
 
 // Only letters, digits, and underscore are valid Minecraft username chars.
 // A leading dot (added by the Bedrock toggle, for GeyserMC) is preserved.
@@ -16,10 +28,55 @@ const sanitize = (raw: string, keepDot: boolean) => {
   return (hasDot ? "." : "") + rest;
 };
 
+// Maps a box given in ORIGINAL-IMAGE percentages into actual on-screen
+// pixels, given how the image is currently being cover-cropped to fill
+// the viewport. This is what makes the overlays land exactly on the
+// artwork's boxes regardless of device aspect ratio, with the background
+// fully covering the screen (crop instead of letterbox/blur).
+function mapBox(box: { left: number; top: number; width: number; height: number }, fit: { renderedW: number; renderedH: number; offsetX: number; offsetY: number }) {
+  return {
+    left: fit.offsetX + (box.left / 100) * fit.renderedW,
+    top: fit.offsetY + (box.top / 100) * fit.renderedH,
+    width: (box.width / 100) * fit.renderedW,
+    height: (box.height / 100) * fit.renderedH,
+  };
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [bedrock, setBedrock] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState<{ renderedW: number; renderedH: number; offsetX: number; offsetY: number } | null>(null);
+
+  // Recompute the cover-fit (crop-to-fill) transform whenever the viewport
+  // size changes, so the background always fully covers the screen — no
+  // letterbox gaps, no blur fill needed — and the interactive boxes track
+  // exactly with wherever the artwork ends up.
+  useEffect(() => {
+    const compute = () => {
+      const el = containerRef.current;
+      if (!el) return;
+      const cw = el.clientWidth;
+      const ch = el.clientHeight;
+      const scale = Math.max(cw / NATURAL_W, ch / NATURAL_H);
+      const renderedW = NATURAL_W * scale;
+      const renderedH = NATURAL_H * scale;
+      setFit({
+        renderedW,
+        renderedH,
+        offsetX: (cw - renderedW) / 2,
+        offsetY: (ch - renderedH) / 2,
+      });
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    window.visualViewport?.addEventListener("resize", compute);
+    return () => {
+      window.removeEventListener("resize", compute);
+      window.visualViewport?.removeEventListener("resize", compute);
+    };
+  }, []);
 
   // If the person already has a saved username, prefill it so this reads
   // as "edit" rather than a blank login.
@@ -56,62 +113,75 @@ export default function LoginPage() {
     router.push("/store");
   };
 
-  // Coordinates measured directly from login-bg.png (450x800) via pixel
-  // color sampling — the whole crystal-bordered box is clickable, not
-  // just the inner input strip.
-  const BOX1 = { left: 14.67, top: 54.375, width: 72, height: 8.5 }; // username
-  const BOX2 = { left: 14.67, top: 63.375, width: 72, height: 7.5 }; // bedrock toggle
-  const BOX3 = { left: 13.78, top: 72.375, width: 72.9, height: 7.875 }; // continue
+  const box1 = fit ? mapBox(BOX1, fit) : null;
+  const box2 = fit ? mapBox(BOX2, fit) : null;
+  const box3 = fit ? mapBox(BOX3, fit) : null;
 
   return (
-      <div className="csmp-root" style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#000000" }}>
-        <style>{`
-          @import url('https://fonts.cdnfonts.com/css/minecraft-4');
-          html, body { overflow: hidden !important; height: 100%; overscroll-behavior: none; }
-          .csmp-login-mobile { display: flex; }
-          .csmp-login-desktop { display: none; }
-          @media (min-width: 900px) {
-            .csmp-login-mobile { display: none; }
-            .csmp-login-desktop { display: flex; }
-          }
-          .csmp-login-input::placeholder { color: rgba(255,255,255,0.35); }
-          .csmp-login-continue:active { transform: scale(0.97); }
-        `}</style>
+    <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#0a0612" }}>
+      <style>{`
+        @import url('https://fonts.cdnfonts.com/css/minecraft-4');
+        html, body { overflow: hidden !important; height: 100%; overscroll-behavior: none; }
+        .csmp-login-mobile { display: block; }
+        .csmp-login-desktop { display: none; }
+        @media (min-width: 900px) {
+          .csmp-login-mobile { display: none; }
+          .csmp-login-desktop { display: flex; }
+        }
+        .csmp-login-input::placeholder { color: rgba(255,255,255,0.35); }
+        .csmp-login-continue:active { transform: scale(0.97); }
+        .csmp-toggle-track { transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+        .csmp-toggle-knob { transition: transform 0.2s ease; }
+      `}</style>
 
-        <button
-          onClick={goBack}
-          style={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            background: "rgba(255,255,255,0.1)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: 50,
-            width: 40,
-            height: 40,
-            color: "rgba(255,255,255,0.6)",
-            cursor: "pointer",
-            zIndex: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          aria-label="Close"
-        >
-          <X size={20} />
-        </button>
+      <button
+        onClick={goBack}
+        style={{
+          position: "fixed",
+          top: 20,
+          right: 20,
+          background: "rgba(255,255,255,0.12)",
+          border: "1px solid rgba(255,255,255,0.25)",
+          borderRadius: 50,
+          width: 40,
+          height: 40,
+          color: "rgba(255,255,255,0.75)",
+          cursor: "pointer",
+          zIndex: 20,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        aria-label="Close"
+      >
+        <X size={20} />
+      </button>
 
-      {/* ============ MOBILE: exact pixel-overlay design on login-bg.png ============ */}
-      <div className="csmp-login-mobile" style={{ position: "absolute", inset: 0, alignItems: "center", justifyContent: "center" }}>
-        {/* Solid black background — no blur, no backdrop, just pure black */}
-        <div style={{ position: "absolute", inset: 0, background: "#000000" }} />
+      {/* ============ MOBILE: background is cropped to fully cover the ============ */}
+      {/* ============ screen (no letterbox, no blur) — overlays are    ============ */}
+      {/* ============ positioned by measuring the actual crop live.    ============ */}
+      <div className="csmp-login-mobile" ref={containerRef} style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+        {fit && (
+          <img
+            src={LOGIN_BG}
+            alt="Login"
+            style={{
+              position: "absolute",
+              left: fit.offsetX,
+              top: fit.offsetY,
+              width: fit.renderedW,
+              height: fit.renderedH,
+              maxWidth: "none",
+              maxHeight: "none",
+              display: "block",
+            }}
+          />
+        )}
 
-        <div style={{ position: "relative", height: "min(100dvh, 177.78vw)", aspectRatio: "450 / 800", maxWidth: "100%", maxHeight: "100dvh" }}>
-          <img src={LOGIN_BG} alt="Login" style={{ width: "100%", height: "100%", display: "block", objectFit: "contain" }} />
-
-          {/* Username box — entire box clickable */}
+        {/* Username box — entire box clickable */}
+        {box1 && (
           <div
-            style={{ position: "absolute", left: `${BOX1.left}%`, top: `${BOX1.top}%`, width: `${BOX1.width}%`, height: `${BOX1.height}%`, display: "flex", alignItems: "center", cursor: "text", zIndex: 3 }}
+            style={{ position: "absolute", left: box1.left, top: box1.top, width: box1.width, height: box1.height, display: "flex", alignItems: "center", cursor: "text", zIndex: 3 }}
             onClick={(e) => { const input = e.currentTarget.querySelector("input"); if (input) input.focus(); }}
           >
             <input
@@ -134,50 +204,60 @@ export default function LoginPage() {
                 fontSize: 16,
                 letterSpacing: 0.5,
                 caretColor: "#a855f7",
-                transform: "translateY(5px)",
               }}
             />
           </div>
+        )}
 
-          {/* Bedrock toggle box — square red/green toggle, X when off, checkmark when on */}
+        {/* Bedrock toggle — whole bar toggles it, plus a real pill switch on the right */}
+        {box2 && (
           <div
-            style={{ position: "absolute", left: `${BOX2.left}%`, top: `${BOX2.top}%`, width: `${BOX2.width}%`, height: `${BOX2.height}%`, display: "flex", alignItems: "center", cursor: "pointer", zIndex: 3 }}
+            style={{ position: "absolute", left: box2.left, top: box2.top, width: box2.width, height: box2.height, display: "flex", alignItems: "center", cursor: "pointer", zIndex: 3 }}
             onClick={toggleBedrock}
           >
             <div
+              className="csmp-toggle-track"
               style={{
-                margin: "0 auto",
-                height: "70%",
-                aspectRatio: "1.6 / 1",
-                borderRadius: 8,
-                background: bedrock ? "#22c55e" : "#dc2626",
-                border: `2px solid ${bedrock ? "#16a34a" : "#991b1b"}`,
-                boxShadow: bedrock ? "0 0 12px rgba(34,197,94,0.6)" : "0 0 8px rgba(220,38,38,0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.2s ease",
-                transform: "translate(30px, 5px)",
+                marginLeft: "80%",
+                width: "15%",
+                aspectRatio: "2 / 1",
+                borderRadius: 999,
+                background: bedrock ? "linear-gradient(90deg,#0f9b6a,#34d399)" : "rgba(255,255,255,0.15)",
+                border: bedrock ? "1px solid rgba(74,222,128,0.85)" : "1px solid rgba(255,255,255,0.35)",
+                boxShadow: bedrock ? "0 0 10px rgba(52,211,153,0.7)" : "none",
+                position: "relative",
+                flexShrink: 0,
               }}
             >
-              {bedrock ? (
-                <Check size={20} color="#fff" strokeWidth={3} />
-              ) : (
-                <X size={20} color="#fff" strokeWidth={3} />
-              )}
+              <div
+                className="csmp-toggle-knob"
+                style={{
+                  position: "absolute",
+                  top: "10%",
+                  left: "8%",
+                  height: "80%",
+                  aspectRatio: "1 / 1",
+                  borderRadius: "50%",
+                  background: "#fff",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+                  transform: bedrock ? "translateX(95%)" : "translateX(0%)",
+                }}
+              />
             </div>
           </div>
+        )}
 
-          {/* Continue box — entire box clickable */}
+        {/* Continue box — entire box clickable */}
+        {box3 && (
           <button
             onClick={handleSubmit}
             disabled={!username.trim()}
             style={{
               position: "absolute",
-              left: `${BOX3.left}%`,
-              top: `${BOX3.top}%`,
-              width: `${BOX3.width}%`,
-              height: `${BOX3.height}%`,
+              left: box3.left,
+              top: box3.top,
+              width: box3.width,
+              height: box3.height,
               background: "transparent",
               border: "none",
               cursor: username.trim() ? "pointer" : "default",
@@ -196,14 +276,13 @@ export default function LoginPage() {
                 letterSpacing: 3,
                 textShadow: "0 0 6px #fff, 0 0 16px #e879f9, 0 0 28px #c026d3, 0 0 42px #a21caf",
                 opacity: username.trim() ? 1 : 0.55,
-                transform: "translateY(3px)",
                 display: "inline-block",
               }}
             >
               CONTINUE
             </span>
           </button>
-        </div>
+        )}
       </div>
 
       {/* ============ DESKTOP: no phone-ratio background yet, so a hand-made ============ */}
@@ -228,7 +307,6 @@ export default function LoginPage() {
             borderRadius: 24,
             padding: "40px 36px",
             boxShadow: "0 0 60px -10px rgba(147,51,234,0.45), 0 20px 60px rgba(0,0,0,0.5)",
-            backdropFilter: "none",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -259,7 +337,7 @@ export default function LoginPage() {
               border: "1.5px solid rgba(168,85,247,0.5)",
               borderRadius: 12,
               padding: "4px 16px",
-              marginBottom: 20,
+              marginBottom: 16,
               boxShadow: "0 0 16px rgba(168,85,247,0.15) inset",
             }}
           >
@@ -285,6 +363,53 @@ export default function LoginPage() {
                 caretColor: "#a855f7",
               }}
             />
+          </div>
+
+          {/* Bedrock toggle row (desktop) */}
+          <div
+            onClick={toggleBedrock}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              background: "rgba(10,8,16,0.6)",
+              border: "1.5px solid rgba(74,222,128,0.35)",
+              borderRadius: 12,
+              padding: "10px 16px",
+              marginBottom: 20,
+              cursor: "pointer",
+            }}
+          >
+            <span style={{ fontFamily: MC, fontSize: 13, color: "rgba(255,255,255,0.75)", letterSpacing: 0.5 }}>BEDROCK ACCOUNT</span>
+            <div
+              className="csmp-toggle-track"
+              style={{
+                width: 40,
+                height: 20,
+                borderRadius: 999,
+                background: bedrock ? "linear-gradient(90deg,#0f9b6a,#34d399)" : "rgba(255,255,255,0.15)",
+                border: bedrock ? "1px solid rgba(74,222,128,0.85)" : "1px solid rgba(255,255,255,0.35)",
+                boxShadow: bedrock ? "0 0 10px rgba(52,211,153,0.7)" : "none",
+                position: "relative",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                className="csmp-toggle-knob"
+                style={{
+                  position: "absolute",
+                  top: 2,
+                  left: 2,
+                  height: 14,
+                  width: 14,
+                  borderRadius: "50%",
+                  background: "#fff",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+                  transform: bedrock ? "translateX(20px)" : "translateX(0px)",
+                }}
+              />
+            </div>
           </div>
 
           <button
