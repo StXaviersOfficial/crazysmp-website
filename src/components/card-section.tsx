@@ -77,7 +77,7 @@ export function CardSection({
           height: 460px;
           margin-left: -140px;
           border-radius: 18px;
-          overflow: hidden;
+          /* overflow: hidden REMOVED so the image's transparent areas don't get clipped to a black box */
           cursor: pointer;
           will-change: transform, opacity;
           backface-visibility: hidden;
@@ -105,10 +105,14 @@ export function CardSection({
         }
         .csmp-card-overlay {
           position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, transparent 35%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0.9) 100%);
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 45%;
+          background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.92) 100%);
           z-index: 1;
           pointer-events: none;
+          border-radius: 0 0 18px 18px;
         }
         .csmp-card-content {
           position: absolute;
