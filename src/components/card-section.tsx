@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 /**
@@ -10,11 +10,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
  * Each card uses a Frame image (provided by user) as the visual texture.
  * The card overlay shows name + price + a "Choose" button on top of the image.
  *
- * Layout:
- *   - Desktop (>= 900px): responsive grid of cards
- *   - Mobile: playing-card stack with tilted peeking cards + nav arrows + dots
+ * Layout: single playing-card stack (works on BOTH desktop and mobile)
+ *   - 1 card front and center, others peeking from behind on both sides
+ *   - Tilted + scaled + translated for 3D depth effect
+ *   - Nav arrows (left/right) + dot indicator
+ *   - Click any card to bring it to front
+ *   - Swipe / scroll wheel to navigate
  *
- * Two sections rendered: Ranks (6 cards) and Keys (3 cards).
+ * Borders/outlines are INVISIBLE (transparent) per user request — only the
+ * image art defines the card's visual shape, no manual outline around it.
  *
  * Props:
  *   - packages: array of { id, name, price, tone, img, frame, isKey, blurb }
@@ -57,32 +61,20 @@ export function CardSection({
     <div style={{ padding: "50px 20px 8px" }}>
       <style>{`
         @import url('https://fonts.cdnfonts.com/css/minecraft-4');
-        .csmp-card-grid {
-          display: grid;
-          gap: 16px;
-          grid-template-columns: 1fr;
-        }
-        @media (min-width: 600px) {
-          .csmp-card-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (min-width: 900px) {
-          .csmp-card-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        }
-        @media (min-width: 1200px) {
-          .csmp-card-grid { grid-template-columns: repeat(${Math.min(packages.length, 6)}, 1fr); }
-        }
-
         .csmp-card-stack {
           position: relative;
-          height: 480px;
-          perspective: 1200px;
+          height: 520px;
+          perspective: 1400px;
+        }
+        @media (min-width: 900px) {
+          .csmp-card-stack { height: 620px; }
         }
         .csmp-playing-card {
           position: absolute;
           top: 0;
           left: 50%;
           width: 280px;
-          height: 440px;
+          height: 460px;
           margin-left: -140px;
           border-radius: 18px;
           overflow: hidden;
@@ -90,6 +82,17 @@ export function CardSection({
           will-change: transform, opacity;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
+          /* OUTLINE INVISIBLE — only the image defines the card's shape */
+          border: 1px solid transparent;
+          background: transparent;
+          box-shadow: none;
+        }
+        @media (min-width: 900px) {
+          .csmp-playing-card {
+            width: 340px;
+            height: 560px;
+            margin-left: -170px;
+          }
         }
         .csmp-card-img {
           position: absolute;
@@ -98,11 +101,12 @@ export function CardSection({
           height: 100%;
           object-fit: contain;
           z-index: 0;
+          pointer-events: none;
         }
         .csmp-card-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.95) 100%);
+          background: linear-gradient(180deg, transparent 35%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0.9) 100%);
           z-index: 1;
           pointer-events: none;
         }
@@ -112,7 +116,7 @@ export function CardSection({
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
-          padding: 18px;
+          padding: 20px;
           z-index: 2;
         }
       `}</style>
@@ -129,115 +133,19 @@ export function CardSection({
         </h2>
       </motion.div>
 
-      {/* Desktop: responsive grid */}
-      <div className="csmp-card-grid">
-        {packages.map((pkg, i) => (
-          <DesktopCard key={pkg.id} pkg={pkg} index={i} onChoose={() => onChoose(pkg)} />
-        ))}
-      </div>
-
-      {/* Mobile: playing-card stack with tilted peeking cards */}
-      <MobileCardStack packages={packages} onChoose={onChoose} />
+      <CardStack packages={packages} onChoose={onChoose} />
     </div>
   );
 }
 
-function DesktopCard({ pkg, index, onChoose }: { pkg: CardPkg; index: number; onChoose: () => void }) {
-  const t = TONES[pkg.tone] || TONES.cyan;
-  return (
-    <motion.button
-      type="button"
-      onClick={onChoose}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ delay: index * 0.05, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      style={{
-        position: "relative",
-        display: "block",
-        padding: 0,
-        border: `1.5px solid ${t.border}`,
-        borderRadius: 18,
-        overflow: "hidden",
-        cursor: "pointer",
-        background: "transparent",
-        boxShadow: `0 10px 40px -10px rgba(0,0,0,0.6), 0 0 0 1px ${t.glow}`,
-        aspectRatio: "3 / 4",
-        minHeight: 280,
-        width: "100%",
-        textAlign: "left",
-        font: "inherit",
-        color: "inherit",
-      }}
-    >
-      <img
-        src={pkg.frame}
-        alt={pkg.name}
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          zIndex: 0,
-        }}
-        draggable={false}
-      />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.95) 100%)",
-          zIndex: 1,
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-end",
-          padding: 18,
-          zIndex: 2,
-        }}
-      >
-        <div style={{ fontFamily: MC, fontSize: 18, fontWeight: 700, color: t.text, lineHeight: 1.2, marginBottom: 4 }}>
-          {pkg.name}
-        </div>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-          <span style={{ fontFamily: PRICE_FONT, fontSize: 22, fontWeight: 700, color: "#fff" }}>{pkg.price}</span>
-          <span
-            style={{
-              fontFamily: MC,
-              fontSize: 11,
-              color: t.text,
-              letterSpacing: 0.5,
-              border: `1px solid ${t.border}`,
-              borderRadius: 6,
-              padding: "4px 10px",
-              background: "rgba(0,0,0,0.4)",
-            }}
-          >
-            CHOOSE →
-          </span>
-        </div>
-      </div>
-    </motion.button>
-  );
-}
-
-function MobileCardStack({
+function CardStack({
   packages,
   onChoose,
 }: {
   packages: CardPkg[];
   onChoose: (pkg: CardPkg) => void;
 }) {
-  const [activeMobile, setActiveMobile] = React.useState(0);
+  const [active, setActive] = React.useState(0);
   const touchStartX = React.useRef<number | null>(null);
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -247,31 +155,20 @@ function MobileCardStack({
     if (touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     if (Math.abs(dx) > 50) {
-      if (dx < 0) setActiveMobile((v) => Math.min(packages.length - 1, v + 1));
-      else setActiveMobile((v) => Math.max(0, v - 1));
+      if (dx < 0) setActive((v) => Math.min(packages.length - 1, v + 1));
+      else setActive((v) => Math.max(0, v - 1));
     }
     touchStartX.current = null;
   };
   const onWheel = (e: React.WheelEvent) => {
     if (Math.abs(e.deltaY) < 20 && Math.abs(e.deltaX) < 20) return;
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    if (delta > 30) setActiveMobile((v) => Math.min(packages.length - 1, v + 1));
-    else if (delta < -30) setActiveMobile((v) => Math.max(0, v - 1));
+    if (delta > 30) setActive((v) => Math.min(packages.length - 1, v + 1));
+    else if (delta < -30) setActive((v) => Math.max(0, v - 1));
   };
 
   return (
-    <div
-      className="csmp-mobile-stack"
-      style={{ display: "none" }}
-    >
-      {/* Hidden by default; made visible via media query below */}
-      <style>{`
-        @media (max-width: 599px) {
-          .csmp-card-grid { display: none !important; }
-          .csmp-mobile-stack { display: block !important; }
-        }
-      `}</style>
-
+    <>
       <div
         className="csmp-card-stack"
         onWheel={onWheel}
@@ -280,52 +177,68 @@ function MobileCardStack({
       >
         {packages.map((pkg, i) => {
           const t = TONES[pkg.tone] || TONES.cyan;
-          const diff = i - activeMobile;
+          const diff = i - active;
           let transform: string;
           let opacity = 0;
           let zIndex = 0;
-          let boxShadow = `0 10px 40px -10px rgba(0,0,0,0.8), 0 0 0 1px ${t.glow}`;
+          // OUTLINE INVISIBLE — only glow shadow on the active card, no border
+          let boxShadow = "none";
 
           if (diff === 0) {
+            // Active card — front and center
             transform = "translateX(0px) translateZ(40px) rotateY(0deg) scale(1)";
             opacity = 1;
             zIndex = 10;
-            boxShadow = `0 20px 60px -10px rgba(0,0,0,0.9), 0 0 0 1px ${t.border}, 0 0 60px -8px ${t.glow}`;
+            boxShadow = `0 30px 80px -10px rgba(0,0,0,0.95), 0 0 80px -8px ${t.glow}`;
           } else if (diff === -1) {
-            transform = "translateX(-110px) translateZ(-30px) rotateY(18deg) scale(0.92)";
+            // One to the left — tilted, slightly back
+            transform = "translateX(-140px) translateZ(-30px) rotateY(22deg) scale(0.92)";
             opacity = 0.7;
             zIndex = 5;
           } else if (diff === 1) {
-            transform = "translateX(110px) translateZ(-30px) rotateY(-18deg) scale(0.92)";
+            // One to the right — tilted, slightly back
+            transform = "translateX(140px) translateZ(-30px) rotateY(-22deg) scale(0.92)";
             opacity = 0.7;
             zIndex = 5;
-          } else if (diff < -1) {
-            transform = "translateX(-180px) translateZ(-60px) rotateY(28deg) scale(0.82)";
+          } else if (diff === -2) {
+            // Two to the left — further back, more tilted
+            transform = "translateX(-240px) translateZ(-70px) rotateY(32deg) scale(0.82)";
             opacity = 0.35;
             zIndex = 1;
+          } else if (diff === 2) {
+            // Two to the right — further back, more tilted
+            transform = "translateX(240px) translateZ(-70px) rotateY(-32deg) scale(0.82)";
+            opacity = 0.35;
+            zIndex = 1;
+          } else if (diff < -2) {
+            // Way left — barely visible
+            transform = `translateX(${-340 + (diff + 2) * 50}px) translateZ(-100px) rotateY(38deg) scale(0.7)`;
+            opacity = 0.15;
+            zIndex = 0;
           } else {
-            transform = "translateX(180px) translateZ(-60px) rotateY(-28deg) scale(0.82)";
-            opacity = 0.35;
-            zIndex = 1;
+            // Way right — barely visible
+            transform = `translateX(${340 + (diff - 2) * 50}px) translateZ(-100px) rotateY(-38deg) scale(0.7)`;
+            opacity = 0.15;
+            zIndex = 0;
           }
 
           return (
             <motion.div
               key={pkg.id}
               className="csmp-playing-card"
-              style={{ zIndex, border: `1px solid ${t.border}`, boxShadow }}
+              style={{ zIndex, boxShadow }}
               animate={{ transform, opacity }}
               transition={{ type: "spring", stiffness: 280, damping: 28, mass: 1.0 }}
-              onClick={() => setActiveMobile(i)}
+              onClick={() => setActive(i)}
             >
               <img src={pkg.frame} alt={pkg.name} className="csmp-card-img" draggable={false} />
               <div className="csmp-card-overlay" />
               <div className="csmp-card-content">
-                <div style={{ fontFamily: MC, fontSize: 20, fontWeight: 700, color: t.text, marginBottom: 4 }}>
+                <div style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: t.text, marginBottom: 6, letterSpacing: 0.5 }}>
                   {pkg.name}
                 </div>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 12 }}>
-                  <span style={{ fontFamily: PRICE_FONT, fontSize: 24, fontWeight: 700, color: "#fff" }}>{pkg.price}</span>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 14 }}>
+                  <span style={{ fontFamily: PRICE_FONT, fontSize: 26, fontWeight: 700, color: "#fff" }}>{pkg.price}</span>
                 </div>
                 <button
                   onClick={(e) => {
@@ -334,16 +247,16 @@ function MobileCardStack({
                   }}
                   style={{
                     fontFamily: MC,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: 700,
                     color: "#0a0812",
                     background: t.border,
                     border: "none",
                     borderRadius: 8,
-                    padding: "10px 16px",
+                    padding: "12px 18px",
                     cursor: "pointer",
                     letterSpacing: 0.5,
-                    boxShadow: `0 4px 16px ${t.glow}`,
+                    boxShadow: `0 4px 20px ${t.glow}`,
                   }}
                 >
                   CHOOSE →
@@ -355,38 +268,39 @@ function MobileCardStack({
       </div>
 
       {/* Nav arrows + dots */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 20 }}>
         <button
-          onClick={() => setActiveMobile((v) => Math.max(0, v - 1))}
-          disabled={activeMobile === 0}
+          onClick={() => setActive((v) => Math.max(0, v - 1))}
+          disabled={active === 0}
           style={{
             display: "inline-flex",
-            height: 40,
-            width: 40,
+            height: 44,
+            width: 44,
             alignItems: "center",
             justifyContent: "center",
             borderRadius: "50%",
-            border: `1px solid ${TONES.cyan.border}`,
+            border: "none",
             background: "rgba(0,0,0,0.4)",
             color: TONES.cyan.text,
-            cursor: activeMobile === 0 ? "not-allowed" : "pointer",
-            opacity: activeMobile === 0 ? 0.3 : 1,
+            cursor: active === 0 ? "not-allowed" : "pointer",
+            opacity: active === 0 ? 0.3 : 1,
+            transition: "opacity 0.2s ease",
           }}
           aria-label="Previous"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={22} />
         </button>
         <div style={{ display: "flex", gap: 6 }}>
           {packages.map((_, i) => (
             <button
               key={i}
-              onClick={() => setActiveMobile(i)}
+              onClick={() => setActive(i)}
               aria-label={`Go to ${i + 1}`}
               style={{
-                height: 6,
-                width: i === activeMobile ? 24 : 6,
+                height: 8,
+                width: i === active ? 28 : 8,
                 borderRadius: 999,
-                background: i === activeMobile ? TONES.cyan.border : "rgba(255,255,255,0.3)",
+                background: i === active ? TONES.cyan.border : "rgba(255,255,255,0.25)",
                 border: "none",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
@@ -395,29 +309,30 @@ function MobileCardStack({
           ))}
         </div>
         <button
-          onClick={() => setActiveMobile((v) => Math.min(packages.length - 1, v + 1))}
-          disabled={activeMobile === packages.length - 1}
+          onClick={() => setActive((v) => Math.min(packages.length - 1, v + 1))}
+          disabled={active === packages.length - 1}
           style={{
             display: "inline-flex",
-            height: 40,
-            width: 40,
+            height: 44,
+            width: 44,
             alignItems: "center",
             justifyContent: "center",
             borderRadius: "50%",
-            border: `1px solid ${TONES.cyan.border}`,
+            border: "none",
             background: "rgba(0,0,0,0.4)",
             color: TONES.cyan.text,
-            cursor: activeMobile === packages.length - 1 ? "not-allowed" : "pointer",
-            opacity: activeMobile === packages.length - 1 ? 0.3 : 1,
+            cursor: active === packages.length - 1 ? "not-allowed" : "pointer",
+            opacity: active === packages.length - 1 ? 0.3 : 1,
+            transition: "opacity 0.2s ease",
           }}
           aria-label="Next"
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={22} />
         </button>
       </div>
-      <p style={{ textAlign: "center", fontFamily: MC, fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 8 }}>
-        Swipe left/right or use arrows · {activeMobile + 1} of {packages.length}
+      <p style={{ textAlign: "center", fontFamily: MC, fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 10 }}>
+        Swipe / scroll / arrows · {active + 1} of {packages.length}
       </p>
-    </div>
+    </>
   );
 }
