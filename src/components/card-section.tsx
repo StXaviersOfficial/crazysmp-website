@@ -76,22 +76,23 @@ export function CardSection({
           width: 300px;
           height: 400px;
           margin-left: -150px;
-          border-radius: 18px;
+          border-radius: 16px;
           /* overflow: hidden REMOVED so the image's transparent areas don't get clipped to a black box */
           cursor: pointer;
           will-change: transform, opacity;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
-          /* OUTLINE INVISIBLE — only the image defines the card's shape */
-          border: 1px solid transparent;
-          background: transparent;
-          box-shadow: none;
+          /* Colored square border — tone-matched per card, no cropping */
+          border: 3px solid var(--csmp-tone, #22D3EE);
+          background: rgba(20, 16, 25, 0.55);
+          box-shadow: 0 0 24px -6px var(--csmp-glow, rgba(34,211,238,0.4));
         }
         @media (min-width: 900px) {
           .csmp-playing-card {
             width: 360px;
             height: 480px;
             margin-left: -180px;
+            border-width: 4px;
           }
         }
         .csmp-card-img {
@@ -234,7 +235,12 @@ function CardStack({
             <motion.div
               key={pkg.id}
               className="csmp-playing-card"
-              style={{ zIndex, boxShadow }}
+              style={{
+                zIndex,
+                boxShadow,
+                "--csmp-tone": t.border,
+                "--csmp-glow": t.glow,
+              } as React.CSSProperties}
               animate={{ transform, opacity }}
               transition={{ type: "spring", stiffness: 280, damping: 28, mass: 1.0 }}
               onClick={() => setActive(i)}
