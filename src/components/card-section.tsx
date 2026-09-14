@@ -73,9 +73,9 @@ export function CardSection({
           position: absolute;
           top: 0;
           left: 50%;
-          width: 280px;
-          height: 460px;
-          margin-left: -140px;
+          width: 300px;
+          height: 400px;
+          margin-left: -150px;
           border-radius: 18px;
           /* overflow: hidden REMOVED so the image's transparent areas don't get clipped to a black box */
           cursor: pointer;
@@ -89,9 +89,9 @@ export function CardSection({
         }
         @media (min-width: 900px) {
           .csmp-playing-card {
-            width: 340px;
-            height: 560px;
-            margin-left: -170px;
+            width: 360px;
+            height: 480px;
+            margin-left: -180px;
           }
         }
         .csmp-card-img {
@@ -99,7 +99,11 @@ export function CardSection({
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: contain;
+          /* All 9 frame images now share an identical canvas ratio (padded,
+             never cropped, to unify them) so object-fit no longer matters
+             for correctness — cover is used only as a rounding safety net
+             against sub-pixel gaps. */
+          object-fit: cover;
           z-index: 0;
           pointer-events: none;
         }

@@ -20,16 +20,16 @@ const PRICE_FONT = "'Space Grotesk', 'Inter', sans-serif";
 
 const PACKAGES = [
   // Ranks (6 tiers)
-  { id: "vip",       name: "VIP Rank",       tier: 1, price: "₹29",    tone: "cyan",    img: "/pkg-vip.webp",        frame: "/frames/vip.png",        isKey: false },
-  { id: "legend",    name: "LEGEND Rank",    tier: 2, price: "₹69",    tone: "gold",    img: "/pkg-legend.webp",     frame: "/frames/legend.png",     isKey: false },
-  { id: "immortal",  name: "IMMORTAL Rank",  tier: 3, price: "₹119",   tone: "indigo",  img: "/pkg-immortal.webp",   frame: "/frames/immortal.png",   isKey: false },
-  { id: "titan",     name: "TITAN Rank",     tier: 4, price: "₹179",   tone: "fire",    img: "/pkg-titan.webp",      frame: "/frames/titan.png",      isKey: false },
-  { id: "techno",    name: "TECHNO Rank",    tier: 5, price: "₹239",   tone: "green",   img: "/pkg-techno.webp",     frame: "/frames/techno.png",     isKey: false },
-  { id: "crazy",     name: "CRAZY Rank",     tier: 6, price: "₹299",   tone: "magenta", img: "/pkg-crazy.webp",      frame: "/frames/crazy.png",      isKey: false },
+  { id: "vip",       name: "VIP Rank",       tier: 1, price: "₹29",    tone: "cyan",    img: "/pkg-vip.webp",        frame: "/frames/vip.webp",        isKey: false },
+  { id: "legend",    name: "LEGEND Rank",    tier: 2, price: "₹69",    tone: "gold",    img: "/pkg-legend.webp",     frame: "/frames/legend.webp",     isKey: false },
+  { id: "immortal",  name: "IMMORTAL Rank",  tier: 3, price: "₹119",   tone: "indigo",  img: "/pkg-immortal.webp",   frame: "/frames/immortal.webp",   isKey: false },
+  { id: "titan",     name: "TITAN Rank",     tier: 4, price: "₹179",   tone: "fire",    img: "/pkg-titan.webp",      frame: "/frames/titan.webp",      isKey: false },
+  { id: "techno",    name: "TECHNO Rank",    tier: 5, price: "₹239",   tone: "green",   img: "/pkg-techno.webp",     frame: "/frames/techno.webp",     isKey: false },
+  { id: "crazy",     name: "CRAZY Rank",     tier: 6, price: "₹299",   tone: "magenta", img: "/pkg-crazy.webp",      frame: "/frames/crazy.webp",      isKey: false },
   // Keys (3 crate keys)
-  { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹19",  tone: "green",   img: "/pkg-spawner-key.webp", frame: "/frames/spawner-key.png", isKey: true },
-  { id: "mega-key",    name: "Mega Key",    bonus: "RARE",   price: "₹39", tone: "cyan",    img: "/pkg-mega-key.webp",    frame: "/frames/mega-key.png",    isKey: true },
-  { id: "crazy-key",   name: "Crazy Key",   bonus: "EPIC",   price: "₹69", tone: "magenta", img: "/pkg-crazy-key.webp",   frame: "/frames/crazy-key.png",   isKey: true },
+  { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹19",  tone: "green",   img: "/pkg-spawner-key.webp", frame: "/frames/spawner-key.webp", isKey: true },
+  { id: "mega-key",    name: "Mega Key",    bonus: "RARE",   price: "₹39", tone: "cyan",    img: "/pkg-mega-key.webp",    frame: "/frames/mega-key.webp",    isKey: true },
+  { id: "crazy-key",   name: "Crazy Key",   bonus: "EPIC",   price: "₹69", tone: "magenta", img: "/pkg-crazy-key.webp",   frame: "/frames/crazy-key.webp",   isKey: true },
 ];
 
 // Two sections: ranks (first 6) + keys (last 3)
