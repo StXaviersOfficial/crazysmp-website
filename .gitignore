@@ -4,3 +4,8 @@ node_modules/
 .env
 *.log
 .vercel
+
+# Environment variables
+.env
+.env.local
+.env.production

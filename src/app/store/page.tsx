@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ShieldCheck, X } from "lucide-react";
 import { DiscordFab } from "@/components/discord-fab";
 import { CardSection } from "@/components/card-section";
+import { ServerStats } from "@/components/server-stats";
 
 const LOGO = "/crazysmp-logo.webp";
 const BG = "/crazysmp-bg-new.webp";
@@ -197,9 +198,12 @@ export default function CrazySMPStore() {
             <img src={skinHead} alt="Head" style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)" }} />
           </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "center", padding: "24px 0 30px" }}>
+        <div style={{ display: "flex", justifyContent: "center", padding: "24px 0 0" }}>
           <img src={LOGO} alt="CrazySMP logo" className="csmp-logo-img" style={{ animation: "portalGlow 3.2s ease-in-out infinite" }} />
         </div>
+
+        {/* Live Discord + MC server counts — two buttons below the logo */}
+        <ServerStats />
       </div>
 
       {/* RANKS — QuackForge-style card system (replaces old pricing bar) */}

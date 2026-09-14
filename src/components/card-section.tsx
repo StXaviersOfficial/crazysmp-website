@@ -154,7 +154,8 @@ function CardStack({
   packages: CardPkg[];
   onChoose: (pkg: CardPkg) => void;
 }) {
-  const [active, setActive] = React.useState(0);
+  // Start from the MIDDLE card by default so the stack looks balanced on load
+  const [active, setActive] = React.useState(Math.floor(packages.length / 2));
   const touchStartX = React.useRef<number | null>(null);
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -344,9 +345,6 @@ function CardStack({
           <ChevronRight size={22} />
         </button>
       </div>
-      <p style={{ textAlign: "center", fontFamily: MC, fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 10 }}>
-        Swipe / scroll / arrows · {active + 1} of {packages.length}
-      </p>
     </>
   );
 }

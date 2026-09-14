@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CrazySMP Store</title>
+  <!-- Redirect to the main Vercel-hosted site -->
+  <meta http-equiv="refresh" content="0; url=https://crazysmp.vercel.app/store" />
+  <link rel="canonical" href="https://crazysmp.vercel.app/store" />
+  <style>
+    body {
+      margin: 0;
+      background: #141019;
+      color: #67E8F9;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+    .glow {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow">Loading CrazySMP Store...</div>
+  <script>
+    // Force redirect after 100ms (in case meta refresh is slow)
+    setTimeout(() => {
+      window.location.replace("https://crazysmp.vercel.app/store");
+    }, 100);
+  </script>
+</body>
+</html>
