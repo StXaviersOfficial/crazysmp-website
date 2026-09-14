@@ -119,10 +119,10 @@ export function ServerStats() {
           className="csmp-stat-btn"
           style={{ color: "#A5B4FC" }}
         >
-          <div className="csmp-stat-logo-dc" style={{ color: "#5865F2", display: "flex", justifyContent: "center" }}>
-            <DiscordLogo size={54} />
+          <div className="csmp-stat-logo-dc" style={{ color: "#5865F2", display: "flex", justifyContent: "center", height: 72, alignItems: "center" }}>
+            <DiscordLogo size={72} />
           </div>
-          <div style={{ fontFamily: PRICE_FONT, fontWeight: 700, fontSize: 18, lineHeight: 1 }}>
+          <div style={{ fontFamily: PRICE_FONT, fontWeight: 700, fontSize: 18, lineHeight: 1, marginTop: 8 }}>
             {discord ? (
               <>
                 <span style={{ color: "#4ADE80" }}>{discord.online}</span>
@@ -143,20 +143,23 @@ export function ServerStats() {
         >
           <div
             className={server?.online ? "csmp-stat-logo-mc" : "csmp-stat-logo-mc-off"}
-            style={{ display: "flex", justifyContent: "center" }}
+            style={{ display: "flex", justifyContent: "center", height: 72, alignItems: "center" }}
           >
             <img
               src="/mc-logo.webp"
               alt=""
-              style={{ width: 81, height: 81, objectFit: "contain" }}
+              style={{ width: 72, height: 72, objectFit: "contain" }}
               draggable={false}
             />
           </div>
-          <div style={{ fontFamily: PRICE_FONT, fontWeight: 700, fontSize: 18, lineHeight: 1 }}>
+          <div style={{ fontFamily: PRICE_FONT, fontWeight: 700, fontSize: 18, lineHeight: 1, marginTop: 8 }}>
             {server === null ? (
               <span style={{ opacity: 0.4, color: "#fff" }}>...</span>
             ) : server.online ? (
-              <span style={{ color: "#4ADE80" }}>{server.players?.online ?? 0}</span>
+              <>
+                <span style={{ color: "#4ADE80" }}>{server.players?.online ?? 0}</span>
+                <span style={{ color: "#fff", opacity: 0.7 }}> / {server.players?.max ?? 0}</span>
+              </>
             ) : (
               <span style={{ color: "#FCA5A5" }}>OFFLINE</span>
             )}
