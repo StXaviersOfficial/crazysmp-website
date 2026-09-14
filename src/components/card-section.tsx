@@ -125,7 +125,7 @@ export function CardSection({
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
-          padding: 20px;
+          padding: 20px 20px 20px 30px;
           z-index: 2;
         }
       `}</style>
