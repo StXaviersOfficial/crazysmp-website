@@ -15,6 +15,10 @@ const DISCORD_URL = "https://discord.gg/GFzAeUj7TJ";
 // Minecraft font family — applied to every text element on the page.
 // Falls back to Inter / monospace if the web font fails to load.
 const MC = "'Minecraft', 'Inter', monospace";
+// Pixel font that supports LOWERCASE (Minecraft font is uppercase-only,
+// but usernames need exact case: 'Steve' ≠ 'STEVE').
+// Pixelify Sans looks very similar to Minecraft's pixelated aesthetic.
+const USERNAME_FONT = "'Pixelify Sans', 'Minecraft', monospace";
 // Better font for prices — Space Grotesk is geometric, modern, and renders
 // numbers beautifully. Loaded via Google Fonts in layout.tsx.
 const PRICE_FONT = "'Space Grotesk', 'Inter', sans-serif";
@@ -117,6 +121,9 @@ export default function CrazySMPStore() {
   const [username, setUsername] = useState("");
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showPurchases, setShowPurchases] = useState(false);
+  const [purchases, setPurchases] = useState<any[]>([]);
+  const [loadingPurchases, setLoadingPurchases] = useState(false);
   const [skinHead, setSkinHead] = useState("/steve-face.png");
 
   // Login now happens on its own page (/login) instead of a fixed overlay —
@@ -135,6 +142,19 @@ export default function CrazySMPStore() {
       setSkinHead("/steve-face.png");
     }
   }, [username]);
+
+  // Fetch purchase history from Firestore when user opens the Purchases modal
+  const fetchPurchases = async (name: string) => {
+    setLoadingPurchases(true);
+    try {
+      const res = await fetch(`/api/purchases?username=${encodeURIComponent(name)}`);
+      const data = await res.json();
+      setPurchases(data.purchases || []);
+    } catch {
+      setPurchases([]);
+    }
+    setLoadingPurchases(false);
+  };
 
   // Preload all images on mount so menu navigation is instant — includes
   // both the old package thumbnails AND the new card-frame images.
@@ -192,8 +212,19 @@ export default function CrazySMPStore() {
         <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, padding: "20px 20px 0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => router.push("/login")}>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontFamily: MC, fontSize: 16, fontWeight: 700, color: "#fff" }}>{username || "Guest"}</div>
-              <div style={{ fontFamily: MC, fontSize: 12, color: "#22D3EE", letterSpacing: 0.5 }}>{username ? "TAP TO EDIT" : "CLICK TO LOGIN"}</div>
+              <div style={{ fontFamily: USERNAME_FONT, fontSize: 18, fontWeight: 600, color: "#fff", lineHeight: 1.2 }}>{username || "Guest"}</div>
+              {username && (
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fetchPurchases(username);
+                    setShowPurchases(true);
+                  }}
+                  style={{ fontFamily: MC, fontSize: 12, color: "#22D3EE", letterSpacing: 0.5, cursor: "pointer", textDecoration: "underline" }}
+                >
+                  Purchases
+                </div>
+              )}
             </div>
             <img src={skinHead} alt="Head" style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)" }} />
           </div>
@@ -275,6 +306,39 @@ export default function CrazySMPStore() {
               <p><strong>3. Deletion</strong></p><p>Request deletion via Discord ticket.</p>
               <p><strong>4. Contact</strong></p><p>contact@crazysmp.bond</p>
             </div>
+          </div>
+        </div>
+      )}
+      {showPurchases && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(8,6,14,0.8)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }} onClick={() => setShowPurchases(false)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480, width: "100%", maxHeight: "80vh", overflowY: "auto", background: "#1c1726", borderRadius: 16, padding: 24, border: "1px solid rgba(34,211,238,0.3)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h3 style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: "#22D3EE", margin: 0 }}>Purchase History</h3>
+              <button onClick={() => setShowPurchases(false)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}><X size={20} /></button>
+            </div>
+            <p style={{ fontFamily: USERNAME_FONT, fontSize: 14, color: "rgba(255,255,255,0.5)", margin: "0 0 16px" }}>
+              For: <strong style={{ color: "#fff" }}>{username}</strong>
+            </p>
+            {loadingPurchases ? (
+              <p style={{ fontFamily: MC, fontSize: 14, color: "rgba(255,255,255,0.5)", textAlign: "center", padding: "20px 0" }}>Loading...</p>
+            ) : purchases.length === 0 ? (
+              <p style={{ fontFamily: MC, fontSize: 14, color: "rgba(255,255,255,0.4)", textAlign: "center", padding: "20px 0" }}>No purchases yet. When you buy a rank or key, it will show up here.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {purchases.map((p: any, i: number) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: "rgba(255,255,255,0.04)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <div>
+                      <div style={{ fontFamily: MC, fontSize: 14, fontWeight: 700, color: "#fff" }}>{p.packageName || p.pkgId}</div>
+                      <div style={{ fontFamily: PRICE_FONT, fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{new Date(p.createdAt).toLocaleDateString()}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontFamily: PRICE_FONT, fontSize: 14, fontWeight: 700, color: "#4ADE80" }}>{p.price}</div>
+                      <div style={{ fontFamily: MC, fontSize: 10, color: p.status === "delivered" ? "#4ADE80" : "#FFD700", marginTop: 2, textTransform: "uppercase" }}>{p.status || "pending"}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

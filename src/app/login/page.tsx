@@ -7,6 +7,9 @@ import { X } from "lucide-react";
 const LOGIN_BG = "/login-bg.webp";
 const LOGO = "/store-logo-new.webp";
 const MC = "'Minecraft', 'Inter', monospace";
+// Pixel font with LOWERCASE support (Minecraft font is uppercase-only,
+// but usernames need exact case preservation)
+const USERNAME_FONT = "'Pixelify Sans', 'Minecraft', monospace";
 
 // Intrinsic size of login-bg.webp — used to compute exact cover-fill math
 // below (not just for display, so don't change without re-measuring).
@@ -233,8 +236,8 @@ export default function LoginPage() {
                 border: "none",
                 outline: "none",
                 color: "#fff",
-                fontFamily: MC,
-                fontWeight: 400,
+                fontFamily: USERNAME_FONT,
+                fontWeight: 600,
                 fontSize: 16,
                 letterSpacing: 0.5,
                 caretColor: "#a855f7",
@@ -394,7 +397,7 @@ export default function LoginPage() {
                 border: "none",
                 outline: "none",
                 color: "#fff",
-                fontFamily: MC,
+                fontFamily: USERNAME_FONT,
                 fontSize: 16,
                 letterSpacing: 0.5,
                 caretColor: "#a855f7",
