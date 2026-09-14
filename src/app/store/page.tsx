@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, X } from "lucide-react";
 import { DiscordFab } from "@/components/discord-fab";
+import { CardSection } from "@/components/card-section";
 
 const LOGO = "/crazysmp-logo.webp";
 const BG = "/crazysmp-bg-new.webp";
@@ -18,19 +19,22 @@ const MC = "'Minecraft', 'Inter', monospace";
 const NORMAL = "'Inter', system-ui, -apple-system, sans-serif";
 
 const PACKAGES = [
-  // Ranks: bonus is now a tier image index (1-6) + a diamond badge.
-  // Keys: bonus is a rarity word (COMMON/RARE/EPIC) — no tier badge.
-  { id: "vip",       name: "VIP Rank",       tier: 1, price: "₹29",    tone: "cyan",    img: "/pkg-vip.webp",        isKey: false },
-  { id: "legend",    name: "LEGEND Rank",    tier: 2, price: "₹69",    tone: "gold",    img: "/pkg-legend.webp",     isKey: false },
-  { id: "immortal",  name: "IMMORTAL Rank",  tier: 3, price: "₹119",   tone: "indigo",  img: "/pkg-immortal.webp",   isKey: false },
-  { id: "titan",     name: "TITAN Rank",     tier: 4, price: "₹179",   tone: "fire",    img: "/pkg-titan.webp",      isKey: false },
-  { id: "techno",   name: "TECHNO Rank",    tier: 5, price: "₹239",   tone: "green",   img: "/pkg-techno.webp",     isKey: false },
-  { id: "crazy",     name: "CRAZY Rank",     tier: 6, price: "₹299",   tone: "magenta", img: "/pkg-crazy.webp",      isKey: false },
-  // Clean 1:1 name-to-file mapping now (new assets from the user, no more rotation)
-  { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹19",  tone: "green",   img: "/pkg-spawner-key.webp", isKey: true },
-  { id: "mega-key",    name: "Mega Key",    bonus: "RARE",   price: "₹39", tone: "cyan",    img: "/pkg-mega-key.webp",    isKey: true },
-  { id: "crazy-key",   name: "Crazy Key",   bonus: "EPIC",   price: "₹69", tone: "magenta", img: "/pkg-crazy-key.webp",   isKey: true },
+  // Ranks (6 tiers)
+  { id: "vip",       name: "VIP Rank",       tier: 1, price: "₹29",    tone: "cyan",    img: "/pkg-vip.webp",        frame: "/frames/vip.png",        isKey: false },
+  { id: "legend",    name: "LEGEND Rank",    tier: 2, price: "₹69",    tone: "gold",    img: "/pkg-legend.webp",     frame: "/frames/legend.png",     isKey: false },
+  { id: "immortal",  name: "IMMORTAL Rank",  tier: 3, price: "₹119",   tone: "indigo",  img: "/pkg-immortal.webp",   frame: "/frames/immortal.png",   isKey: false },
+  { id: "titan",     name: "TITAN Rank",     tier: 4, price: "₹179",   tone: "fire",    img: "/pkg-titan.webp",      frame: "/frames/titan.png",      isKey: false },
+  { id: "techno",    name: "TECHNO Rank",    tier: 5, price: "₹239",   tone: "green",   img: "/pkg-techno.webp",     frame: "/frames/techno.png",     isKey: false },
+  { id: "crazy",     name: "CRAZY Rank",     tier: 6, price: "₹299",   tone: "magenta", img: "/pkg-crazy.webp",      frame: "/frames/crazy.png",      isKey: false },
+  // Keys (3 crate keys)
+  { id: "spawner-key", name: "Spawner Key", bonus: "COMMON", price: "₹19",  tone: "green",   img: "/pkg-spawner-key.webp", frame: "/frames/spawner-key.png", isKey: true },
+  { id: "mega-key",    name: "Mega Key",    bonus: "RARE",   price: "₹39", tone: "cyan",    img: "/pkg-mega-key.webp",    frame: "/frames/mega-key.png",    isKey: true },
+  { id: "crazy-key",   name: "Crazy Key",   bonus: "EPIC",   price: "₹69", tone: "magenta", img: "/pkg-crazy-key.webp",   frame: "/frames/crazy-key.png",   isKey: true },
 ];
+
+// Two sections: ranks (first 6) + keys (last 3)
+const RANKS = PACKAGES.filter((p) => !p.isKey);
+const KEYS = PACKAGES.filter((p) => p.isKey);
 
 const TONES = {
   cyan:    { border: "#22D3EE", bg: "linear-gradient(180deg, rgba(34,211,238,0.18), rgba(14,28,40,0.7))", text: "#67E8F9" },
@@ -131,11 +135,13 @@ export default function CrazySMPStore() {
     }
   }, [username]);
 
-  // Preload all images on mount so menu navigation is instant
+  // Preload all images on mount so menu navigation is instant — includes
+  // both the old package thumbnails AND the new card-frame images.
   useEffect(() => {
     const imagesToPreload = [
       LOGO, BG, LOGIN_BG, "/steve-face.png",
       ...PACKAGES.map((p) => p.img),
+      ...PACKAGES.map((p) => p.frame),
     ];
     imagesToPreload.forEach((src) => {
       const img = new Image();
@@ -144,7 +150,7 @@ export default function CrazySMPStore() {
   }, []);
 
   return (
-      <div className="csmp-root" style={{ fontFamily: MC, background: "#141019", color: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+    <div className="csmp-root" style={{ fontFamily: MC, background: "#141019", color: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
       <style>{`
         @import url('https://fonts.cdnfonts.com/css/minecraft-4');
         * { box-sizing: border-box; }
@@ -161,9 +167,6 @@ export default function CrazySMPStore() {
         }
         @media (min-width: 900px) {
           .csmp-hero {
-            /* No desktop-ratio background photo yet — placeholder gradient
-               until one is provided, instead of badly cropping the phone
-               image across a wide short viewport. */
             background-image: linear-gradient(180deg, rgba(15,10,22,0.1) 0%, rgba(15,10,22,0.45) 55%, #141019 100%),
               radial-gradient(circle at 22% 20%, rgba(124,58,237,0.4), transparent 55%),
               radial-gradient(circle at 82% 80%, rgba(37,99,235,0.32), transparent 55%),
@@ -175,16 +178,10 @@ export default function CrazySMPStore() {
         @media (min-width: 900px) {
           .csmp-logo-img { max-width: 340px; }
         }
-        .csmp-packages-grid { display: flex; flex-direction: column; gap: 16px; }
-        @media (min-width: 900px) {
-          .csmp-packages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        }
         @keyframes portalGlow {
           0%, 100% { filter: drop-shadow(0 0 18px rgba(34,211,238,0.5)) drop-shadow(0 0 40px rgba(34,211,238,0.3)); }
           50% { filter: drop-shadow(0 0 28px rgba(34,211,238,0.8)) drop-shadow(0 0 60px rgba(34,211,238,0.5)); }
         }
-        .csmp-pkg-card:active { transform: scale(0.98); }
-        .csmp-btn:active { transform: scale(0.97); }
         /* Minecraft font smoothing — pixel fonts look best without antialiasing */
         body { -webkit-font-smoothing: none; font-smooth: never; }
       `}</style>
@@ -205,47 +202,22 @@ export default function CrazySMPStore() {
         </div>
       </div>
 
-      {/* FEATURED PACKAGES — flex:1 so footer gets pushed to the very bottom on desktop */}
-      <div style={{ padding: "50px 20px 8px", flex: 1 }}>
-        <h2 style={{ fontFamily: MC, fontSize: 26, fontWeight: 700, color: "#22D3EE", margin: "0 0 18px", letterSpacing: 0.5 }}>Featured Packages</h2>
-        <div className="csmp-packages-grid">
-          {PACKAGES.map((pkg) => {
-            const t = TONES[pkg.tone] || TONES.cyan;
-            // Shift 3 key cards 5px to the left
-            const keyShift = pkg.isKey ? { marginLeft: -5 } : {};
-            return (
-              <button
-                key={pkg.id}
-                className="csmp-pkg-card"
-                onClick={() => setModalPkg(pkg)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 22,
-                  textAlign: "left",
-                  background: t.bg,
-                  border: `1.5px solid ${t.border}`,
-                  borderRadius: 14,
-                  padding: 16,
-                  cursor: "pointer",
-                  color: "inherit",
-                  font: "inherit",
-                  ...keyShift,
-                }}
-              >
-                <PkgIcon pkg={pkg} size={58} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: MC, fontSize: 18, fontWeight: 700, color: t.text, lineHeight: 1.25, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    {pkg.name}
-                    {/* Tier badges (roman numerals + diamond orbs) REMOVED per user request.
-                        Rarity text (COMMON/RARE/EPIC) also removed from key cards. */}
-                  </div>
-                  <div style={{ fontFamily: NORMAL, fontSize: 16, fontWeight: 700, color: "#fff", marginTop: 4 }}>{pkg.price}</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+      {/* RANKS — QuackForge-style card system (replaces old pricing bar) */}
+      <div style={{ flex: 1 }}>
+        <CardSection
+          title="Ranks"
+          subtitle="01 · RANKS"
+          packages={RANKS}
+          onChoose={(pkg) => setModalPkg(pkg)}
+        />
+
+        {/* KEYS — second section, same card system */}
+        <CardSection
+          title="Crate Keys"
+          subtitle="02 · KEYS"
+          packages={KEYS}
+          onChoose={(pkg) => setModalPkg(pkg)}
+        />
       </div>
 
       {/* FOOTER — store-only page, just credits + text-only Terms/Privacy links
