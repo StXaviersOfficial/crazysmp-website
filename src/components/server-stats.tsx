@@ -134,7 +134,7 @@ export function ServerStats() {
           </div>
         </a>
 
-        {/* Minecraft button — official logo from user, count below, no box */}
+        {/* Minecraft button — official logo from user (already has 'Minecraft' text in image) */}
         <button
           onClick={copyIp}
           title={`Click to copy: ${SERVER_IP}:${SERVER_PORT}`}
@@ -147,8 +147,8 @@ export function ServerStats() {
           >
             <img
               src="/mc-logo.webp"
-              alt="Minecraft"
-              style={{ width: 54, height: 54, objectFit: "contain" }}
+              alt=""
+              style={{ width: 81, height: 81, objectFit: "contain" }}
               draggable={false}
             />
           </div>
@@ -172,14 +172,14 @@ export function ServerStats() {
         style={{
           fontFamily: PRICE_FONT,
           fontWeight: 700,
-          fontSize: 13,
+          fontSize: 18,
           color: "rgba(255,255,255,0.6)",
           textAlign: "center",
           letterSpacing: 0.3,
           background: "transparent",
           border: "none",
           padding: 0,
-          marginTop: 16,
+          marginTop: 40,
           cursor: "pointer",
         }}
       >
