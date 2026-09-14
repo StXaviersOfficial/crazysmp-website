@@ -132,6 +132,37 @@ export default function LoginPage() {
         .csmp-login-continue:active { transform: scale(0.97); }
         .csmp-toggle-track { transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
         .csmp-toggle-knob { transition: transform 0.2s ease; }
+
+        /* Pulsing glow on username box — draws attention to where to click */
+        @keyframes csmp-glow-username {
+          0%, 100% { box-shadow: 0 0 8px rgba(168,85,247,0.25), inset 0 0 6px rgba(168,85,247,0.08); }
+          50% { box-shadow: 0 0 22px rgba(168,85,247,0.55), inset 0 0 12px rgba(168,85,247,0.15); }
+        }
+        .csmp-glow-username-box {
+          animation: csmp-glow-username 2.8s ease-in-out infinite;
+          border-radius: 12px;
+          background: rgba(168,85,247,0.04);
+        }
+
+        /* Pulsing glow on CONTINUE box — calls user to action */
+        @keyframes csmp-glow-continue {
+          0%, 100% { box-shadow: 0 0 8px rgba(192,38,211,0.2); }
+          50% { box-shadow: 0 0 22px rgba(192,38,211,0.5); }
+        }
+        .csmp-glow-continue-box {
+          animation: csmp-glow-continue 2.2s ease-in-out infinite;
+          border-radius: 12px;
+          background: rgba(192,38,211,0.04);
+        }
+
+        /* Pulsing text glow on CONTINUE text */
+        @keyframes csmp-glow-continue-text {
+          0%, 100% { text-shadow: 0 0 6px #fff, 0 0 16px #e879f9, 0 0 28px #c026d3; }
+          50% { text-shadow: 0 0 8px #fff, 0 0 24px #e879f9, 0 0 40px #c026d3, 0 0 60px #a21caf; }
+        }
+        .csmp-glow-continue-text {
+          animation: csmp-glow-continue-text 2.2s ease-in-out infinite;
+        }
       `}</style>
 
       <button
@@ -178,9 +209,11 @@ export default function LoginPage() {
           />
         )}
 
-        {/* Username box — entire box clickable (shifted 5px down per user request) */}
+        {/* Username box — entire box clickable (shifted 5px down)
+            Glow effect added so users know where to click */}
         {box1 && (
           <div
+            className="csmp-glow-username-box"
             style={{ position: "absolute", left: box1.left, top: box1.top + 5, width: box1.width, height: box1.height, display: "flex", alignItems: "center", cursor: "text", zIndex: 3 }}
             onClick={(e) => { const input = e.currentTarget.querySelector("input"); if (input) input.focus(); }}
           >
@@ -190,6 +223,7 @@ export default function LoginPage() {
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               placeholder="Username"
               maxLength={16}
+              autoFocus
               style={{
                 width: "100%",
                 height: "70%",
@@ -247,11 +281,13 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Continue box — entire box clickable (shifted 5px down per user request) */}
+        {/* Continue box — entire box clickable (shifted 5px down)
+            Glow effect + pulsing text draws attention */}
         {box3 && (
           <button
             onClick={handleSubmit}
             disabled={!username.trim()}
+            className="csmp-glow-continue-box"
             style={{
               position: "absolute",
               left: box3.left,
@@ -268,13 +304,13 @@ export default function LoginPage() {
             }}
           >
             <span
+              className="csmp-glow-continue-text"
               style={{
                 fontFamily: MC,
                 fontSize: 22,
                 fontWeight: 700,
                 color: "#fff",
                 letterSpacing: 3,
-                textShadow: "0 0 6px #fff, 0 0 16px #e879f9, 0 0 28px #c026d3, 0 0 42px #a21caf",
                 opacity: username.trim() ? 1 : 0.55,
                 display: "inline-block",
               }}
@@ -349,6 +385,7 @@ export default function LoginPage() {
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               placeholder="Username"
               maxLength={16}
+              autoFocus
               style={{
                 flex: 1,
                 minWidth: 0,

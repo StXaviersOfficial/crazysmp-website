@@ -14,9 +14,9 @@ const DISCORD_URL = "https://discord.gg/GFzAeUj7TJ";
 // Minecraft font family — applied to every text element on the page.
 // Falls back to Inter / monospace if the web font fails to load.
 const MC = "'Minecraft', 'Inter', monospace";
-// Normal sans-serif font for prices (per user request — prices stand out
-// better when not in the pixelated MC font).
-const NORMAL = "'Inter', system-ui, -apple-system, sans-serif";
+// Better font for prices — Space Grotesk is geometric, modern, and renders
+// numbers beautifully. Loaded via Google Fonts in layout.tsx.
+const PRICE_FONT = "'Space Grotesk', 'Inter', sans-serif";
 
 const PACKAGES = [
   // Ranks (6 tiers)
@@ -86,18 +86,18 @@ function PackageModal({ open, onClose, pkg, username }) {
           <PkgIcon pkg={pkg} size={54} />
           <div>
             <h3 style={{ fontFamily: MC, fontSize: 22, fontWeight: 700, color: t.text, margin: 0 }}>{pkg.name}</h3>
-            <p style={{ fontFamily: NORMAL, color: "rgba(255,255,255,0.5)", fontSize: 14, margin: "2px 0 0" }}>
+            <p style={{ fontFamily: PRICE_FONT, color: "rgba(255,255,255,0.5)", fontSize: 14, margin: "2px 0 0" }}>
               {pkg.price}
             </p>
           </div>
         </div>
         {username ? (
           <>
-            <p style={{ fontFamily: NORMAL, color: "rgba(255,255,255,0.7)", fontSize: 15, textAlign: "center", marginBottom: 20 }}>
+            <p style={{ fontFamily: PRICE_FONT, color: "rgba(255,255,255,0.7)", fontSize: 15, textAlign: "center", marginBottom: 20 }}>
               Purchasing for: <strong style={{ color: t.text }}>{username}</strong>
             </p>
             <button style={{ width: "100%", background: t.border, border: "none", borderRadius: 12, padding: "16px", color: "#0e0a15", fontFamily: MC, fontWeight: 700, fontSize: 18, cursor: "pointer" }} onClick={() => { window.open(DISCORD_URL, "_blank"); onClose(); }}>
-              PROCEED TO PAYMENT · <span style={{ fontFamily: NORMAL }}>{pkg.price}</span>
+              PROCEED TO PAYMENT · <span style={{ fontFamily: PRICE_FONT }}>{pkg.price}</span>
             </button>
           </>
         ) : (
@@ -206,7 +206,6 @@ export default function CrazySMPStore() {
       <div style={{ flex: 1 }}>
         <CardSection
           title="Ranks"
-          subtitle="01 · RANKS"
           packages={RANKS}
           onChoose={(pkg) => setModalPkg(pkg)}
         />
@@ -214,7 +213,6 @@ export default function CrazySMPStore() {
         {/* KEYS — second section, same card system */}
         <CardSection
           title="Crate Keys"
-          subtitle="02 · KEYS"
           packages={KEYS}
           onChoose={(pkg) => setModalPkg(pkg)}
         />

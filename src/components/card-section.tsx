@@ -22,7 +22,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
  */
 
 const MC = "'Minecraft', 'Inter', monospace";
-const NORMAL = "'Inter', system-ui, -apple-system, sans-serif";
+// Better font for prices — Space Grotesk is geometric, modern, and renders
+// numbers beautifully. Loaded via Google Fonts in layout.tsx.
+const PRICE_FONT = "'Space Grotesk', 'Inter', sans-serif";
 
 const TONES: Record<string, { border: string; text: string; glow: string }> = {
   cyan:    { border: "#22D3EE", text: "#67E8F9", glow: "rgba(34,211,238,0.5)" },
@@ -44,12 +46,10 @@ type CardPkg = {
 
 export function CardSection({
   title,
-  subtitle,
   packages,
   onChoose,
 }: {
   title: string;
-  subtitle: string;
   packages: CardPkg[];
   onChoose: (pkg: CardPkg) => void;
 }) {
@@ -96,7 +96,7 @@ export function CardSection({
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
           z-index: 0;
         }
         .csmp-card-overlay {
@@ -124,9 +124,6 @@ export function CardSection({
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         style={{ marginBottom: 24 }}
       >
-        <div style={{ fontFamily: MC, fontSize: 13, color: "#22D3EE", letterSpacing: 1, marginBottom: 6 }}>
-          {subtitle}
-        </div>
         <h2 style={{ fontFamily: MC, fontSize: 30, fontWeight: 700, color: "#fff", margin: 0, letterSpacing: 0.5 }}>
           {title}
         </h2>
@@ -212,7 +209,7 @@ function DesktopCard({ pkg, index, onChoose }: { pkg: CardPkg; index: number; on
           {pkg.name}
         </div>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-          <span style={{ fontFamily: NORMAL, fontSize: 22, fontWeight: 700, color: "#fff" }}>{pkg.price}</span>
+          <span style={{ fontFamily: PRICE_FONT, fontSize: 22, fontWeight: 700, color: "#fff" }}>{pkg.price}</span>
           <span
             style={{
               fontFamily: MC,
@@ -328,7 +325,7 @@ function MobileCardStack({
                   {pkg.name}
                 </div>
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 12 }}>
-                  <span style={{ fontFamily: NORMAL, fontSize: 24, fontWeight: 700, color: "#fff" }}>{pkg.price}</span>
+                  <span style={{ fontFamily: PRICE_FONT, fontSize: 24, fontWeight: 700, color: "#fff" }}>{pkg.price}</span>
                 </div>
                 <button
                   onClick={(e) => {
