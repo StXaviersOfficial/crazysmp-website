@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 
 const LOGIN_BG = "/login-bg.webp";
+const LOGIN_BG_DESKTOP = "/login-bg-desktop.webp";
 const LOGO = "/store-logo-new.webp";
 const MC = "'Minecraft', 'Inter', monospace";
 // Pixel font with LOWERCASE support (Minecraft font is uppercase-only,
@@ -16,12 +17,23 @@ const USERNAME_FONT = "'Pixelify Sans', 'Minecraft', monospace";
 const NATURAL_W = 941;
 const NATURAL_H = 1672;
 
+// Intrinsic size of login-bg-desktop.webp (the wide desktop-ratio version)
+// — used for the desktop contain-fit math below.
+const NATURAL_W_DESK = 1717;
+const NATURAL_H_DESK = 916;
+
 // Box coordinates measured directly from login-bg.webp via pixel color
 // sampling (percentage of the ORIGINAL image, not of any container) —
 // these get mapped into actual on-screen pixels by the cover-fit math.
 const BOX1 = { left: 15.73, top: 55.32, width: 69.08, height: 7.0 }; // username
 const BOX2 = { left: 15.73, top: 64.95, width: 69.08, height: 5.74 }; // bedrock toggle
 const BOX3 = { left: 15.73, top: 72.49, width: 69.08, height: 7.36 }; // continue
+
+// Same idea, measured against login-bg-desktop.webp (a completely
+// different composition/ratio, so completely different numbers).
+const BOX1_DESK = { left: 31.57, top: 59.83, width: 26.97, height: 8.08 };
+const BOX2_DESK = { left: 31.57, top: 69.87, width: 26.97, height: 8.52 };
+const BOX3_DESK = { left: 31.57, top: 78.82, width: 26.97, height: 9.61 };
 
 // Only letters, digits, and underscore are valid Minecraft username chars.
 // A leading dot (added by the Bedrock toggle, for GeyserMC) is preserved.
@@ -51,6 +63,33 @@ export default function LoginPage() {
   const [bedrock, setBedrock] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState<{ renderedW: number; renderedH: number; offsetX: number; offsetY: number } | null>(null);
+  const deskContainerRef = useRef<HTMLDivElement>(null);
+  const [deskFit, setDeskFit] = useState<{ renderedW: number; renderedH: number; offsetX: number; offsetY: number } | null>(null);
+
+  // Desktop: CONTAIN-fit (never crops — shrinks/grows the whole image to
+  // fit inside the available frame instead), unlike the mobile cover-fit
+  // above. A decorative border is drawn around the contained image so the
+  // letterboxed edges read as an intentional frame rather than a cut-off.
+  useEffect(() => {
+    const compute = () => {
+      const el = deskContainerRef.current;
+      if (!el) return;
+      const cw = el.clientWidth;
+      const ch = el.clientHeight;
+      const scale = Math.min(cw / NATURAL_W_DESK, ch / NATURAL_H_DESK);
+      const renderedW = NATURAL_W_DESK * scale;
+      const renderedH = NATURAL_H_DESK * scale;
+      setDeskFit({
+        renderedW,
+        renderedH,
+        offsetX: (cw - renderedW) / 2,
+        offsetY: (ch - renderedH) / 2,
+      });
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    return () => window.removeEventListener("resize", compute);
+  }, []);
 
   // Recompute the cover-fit (crop-to-fill) transform whenever the viewport
   // size changes, so the background always fully covers the screen — no
@@ -119,6 +158,10 @@ export default function LoginPage() {
   const box1 = fit ? mapBox(BOX1, fit) : null;
   const box2 = fit ? mapBox(BOX2, fit) : null;
   const box3 = fit ? mapBox(BOX3, fit) : null;
+
+  const dBox1 = deskFit ? mapBox(BOX1_DESK, deskFit) : null;
+  const dBox2 = deskFit ? mapBox(BOX2_DESK, deskFit) : null;
+  const dBox3 = deskFit ? mapBox(BOX3_DESK, deskFit) : null;
 
   return (
     <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#0a0612" }}>
@@ -324,63 +367,55 @@ export default function LoginPage() {
         )}
       </div>
 
-      {/* ============ DESKTOP: no phone-ratio background yet, so a hand-made ============ */}
-      {/* ============ purple/blue gradient + a proper redesigned card ============ */}
+      {/* ============ DESKTOP: real background art (login-bg-desktop.webp), ============ */}
+      {/* ============ CONTAIN-fit (never crops) with a decorative border    ============ */}
+      {/* ============ frame around the letterboxed edges.                   ============ */}
       <div
         className="csmp-login-desktop"
-        style={{
-          position: "absolute",
-          inset: 0,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundImage:
-            "radial-gradient(circle at 22% 18%, rgba(124,58,237,0.38), transparent 55%), radial-gradient(circle at 82% 78%, rgba(37,99,235,0.32), transparent 55%), linear-gradient(160deg, #1a1025 0%, #150d24 45%, #0a0812 100%)",
-        }}
+        ref={deskContainerRef}
+        style={{ position: "absolute", inset: 0, alignItems: "center", justifyContent: "center", background: "#05030a" }}
       >
-        <div
-          style={{
-            width: 420,
-            maxWidth: "90vw",
-            background: "rgba(20,14,28,0.75)",
-            border: "1px solid rgba(168,85,247,0.35)",
-            borderRadius: 24,
-            padding: "40px 36px",
-            boxShadow: "0 0 60px -10px rgba(147,51,234,0.45), 0 20px 60px rgba(0,0,0,0.5)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <img src={LOGO} alt="CrazySMP" style={{ width: "70%", maxWidth: 220, marginBottom: 8 }} />
-          <h1
-            style={{
-              fontFamily: MC,
-              fontSize: 28,
-              fontWeight: 700,
-              color: "#fff",
-              letterSpacing: 4,
-              margin: "8px 0 28px",
-              textShadow: "0 0 8px #fff, 0 0 20px #e879f9, 0 0 36px #a21caf",
-            }}
-          >
-            LOGIN
-          </h1>
-
+        {deskFit && (
           <div
             style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              background: "rgba(10,8,16,0.6)",
-              border: "1.5px solid rgba(168,85,247,0.5)",
-              borderRadius: 12,
-              padding: "4px 16px",
-              marginBottom: 16,
-              boxShadow: "0 0 16px rgba(168,85,247,0.15) inset",
+              position: "absolute",
+              left: deskFit.offsetX - 10,
+              top: deskFit.offsetY - 10,
+              width: deskFit.renderedW + 20,
+              height: deskFit.renderedH + 20,
+              border: "1px solid rgba(168,85,247,0.4)",
+              borderRadius: 14,
+              boxShadow: "0 0 50px -6px rgba(147,51,234,0.4), inset 0 0 40px -10px rgba(147,51,234,0.25)",
+              pointerEvents: "none",
             }}
+          />
+        )}
+
+        {deskFit && (
+          <img
+            src={LOGIN_BG_DESKTOP}
+            alt="Login"
+            style={{
+              position: "absolute",
+              left: deskFit.offsetX,
+              top: deskFit.offsetY,
+              width: deskFit.renderedW,
+              height: deskFit.renderedH,
+              maxWidth: "none",
+              maxHeight: "none",
+              display: "block",
+              borderRadius: 8,
+            }}
+          />
+        )}
+
+        {/* Username box — entire box clickable */}
+        {dBox1 && (
+          <div
+            className="csmp-glow-username-box"
+            style={{ position: "absolute", left: dBox1.left, top: dBox1.top, width: dBox1.width, height: dBox1.height, display: "flex", alignItems: "center", cursor: "text", zIndex: 3 }}
+            onClick={(e) => { const input = e.currentTarget.querySelector("input"); if (input) input.focus(); }}
           >
-            <img src="/steve-face.png" alt="" style={{ width: 30, height: 30, borderRadius: 6, flexShrink: 0 }} />
             <input
               className="csmp-login-input"
               value={username}
@@ -392,41 +427,34 @@ export default function LoginPage() {
               style={{
                 flex: 1,
                 minWidth: 0,
-                height: 52,
+                height: "70%",
+                marginLeft: "17%",
+                paddingRight: "4%",
                 background: "transparent",
                 border: "none",
                 outline: "none",
                 color: "#fff",
                 fontFamily: USERNAME_FONT,
-                fontSize: 16,
+                fontSize: 17,
                 letterSpacing: 0.5,
                 caretColor: "#a855f7",
               }}
             />
           </div>
+        )}
 
-          {/* Bedrock toggle row (desktop) */}
+        {/* Bedrock toggle — whole bar toggles it, plus a pill switch on the right */}
+        {dBox2 && (
           <div
+            style={{ position: "absolute", left: dBox2.left, top: dBox2.top, width: dBox2.width, height: dBox2.height, display: "flex", alignItems: "center", cursor: "pointer", zIndex: 3 }}
             onClick={toggleBedrock}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              background: "rgba(10,8,16,0.6)",
-              border: "1.5px solid rgba(74,222,128,0.35)",
-              borderRadius: 12,
-              padding: "10px 16px",
-              marginBottom: 20,
-              cursor: "pointer",
-            }}
           >
-            <span style={{ fontFamily: MC, fontSize: 13, color: "rgba(255,255,255,0.75)", letterSpacing: 0.5 }}>BEDROCK ACCOUNT</span>
             <div
               className="csmp-toggle-track"
               style={{
-                width: 40,
-                height: 20,
+                marginLeft: "80%",
+                width: "15%",
+                aspectRatio: "2 / 1",
                 borderRadius: 999,
                 background: bedrock ? "linear-gradient(90deg,#0f9b6a,#34d399)" : "rgba(255,255,255,0.15)",
                 border: bedrock ? "1px solid rgba(74,222,128,0.85)" : "1px solid rgba(255,255,255,0.35)",
@@ -439,52 +467,57 @@ export default function LoginPage() {
                 className="csmp-toggle-knob"
                 style={{
                   position: "absolute",
-                  top: 2,
-                  left: 2,
-                  height: 14,
-                  width: 14,
+                  top: "10%",
+                  left: "8%",
+                  height: "80%",
+                  aspectRatio: "1 / 1",
                   borderRadius: "50%",
                   background: "#fff",
                   boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
-                  transform: bedrock ? "translateX(20px)" : "translateX(0px)",
+                  transform: bedrock ? "translateX(95%)" : "translateX(0%)",
                 }}
               />
             </div>
           </div>
+        )}
 
+        {/* Continue box — entire box clickable */}
+        {dBox3 && (
           <button
-            className="csmp-login-continue"
             onClick={handleSubmit}
             disabled={!username.trim()}
+            className="csmp-glow-continue-box"
             style={{
-              width: "100%",
-              background: username.trim() ? "linear-gradient(135deg,#a855f7,#c026d3)" : "rgba(255,255,255,0.08)",
+              position: "absolute",
+              left: dBox3.left,
+              top: dBox3.top,
+              width: dBox3.width,
+              height: dBox3.height,
+              background: "transparent",
               border: "none",
-              borderRadius: 12,
-              padding: "16px",
               cursor: username.trim() ? "pointer" : "default",
-              boxShadow: username.trim() ? "0 0 24px rgba(192,38,211,0.5)" : "none",
-              transition: "transform 0.15s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 3,
             }}
           >
             <span
+              className="csmp-glow-continue-text"
               style={{
                 fontFamily: MC,
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: 700,
                 color: "#fff",
                 letterSpacing: 3,
-                opacity: username.trim() ? 1 : 0.45,
+                opacity: username.trim() ? 1 : 0.55,
+                display: "inline-block",
               }}
             >
               CONTINUE
             </span>
           </button>
-
-          <p style={{ fontFamily: MC, fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 18, textAlign: "center", lineHeight: 1.6 }}>
-            Desktop background art is on the way — using a placeholder gradient for now.
-          </p>
-        </div>
+        )}
       </div>
     </div>
   );

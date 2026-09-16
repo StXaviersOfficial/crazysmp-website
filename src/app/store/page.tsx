@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, X } from "lucide-react";
 import { DiscordFab } from "@/components/discord-fab";
@@ -8,8 +8,10 @@ import { CardSection } from "@/components/card-section";
 import { ServerStats } from "@/components/server-stats";
 
 const LOGO = "/crazysmp-logo.webp";
-const BG = "/crazysmp-bg-new.webp";
+const BG_MOBILE = "/front-bg-mobile.webp";
+const BG_DESKTOP = "/front-bg-desktop.webp";
 const LOGIN_BG = "/login-bg.webp";
+const LOGIN_BG_DESKTOP = "/login-bg-desktop.webp";
 const DISCORD_URL = "https://discord.gg/GFzAeUj7TJ";
 
 // Minecraft font family — applied to every text element on the page.
@@ -125,6 +127,41 @@ export default function CrazySMPStore() {
   const [purchases, setPurchases] = useState<any[]>([]);
   const [loadingPurchases, setLoadingPurchases] = useState(false);
   const [skinHead, setSkinHead] = useState("/steve-face.png");
+  const bgOverlayRef = useRef<HTMLDivElement>(null);
+
+  // The site background is now a single fixed image behind the whole page
+  // (not just the hero strip). As the person scrolls down, it progressively
+  // blurs + darkens — sharp and only lightly tinted at the top, fully
+  // obscured (matching the old hero's bottom fade) by the time they reach
+  // the footer. Driven directly via a ref (not React state) so it doesn't
+  // trigger a re-render on every scroll tick.
+  useEffect(() => {
+    let ticking = false;
+    const update = () => {
+      const el = bgOverlayRef.current;
+      if (el) {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+        el.style.backdropFilter = `blur(${progress * 22}px)`;
+        el.style.WebkitBackdropFilter = `blur(${progress * 22}px)`;
+        el.style.background = `rgba(10,7,16,${0.28 + progress * 0.62})`;
+      }
+      ticking = false;
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(update);
+        ticking = true;
+      }
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
 
   // Login now happens on its own page (/login) instead of a fixed overlay —
   // pick up whatever it saved whenever this page mounts (including when
@@ -160,7 +197,7 @@ export default function CrazySMPStore() {
   // both the old package thumbnails AND the new card-frame images.
   useEffect(() => {
     const imagesToPreload = [
-      LOGO, BG, LOGIN_BG, "/steve-face.png",
+      LOGO, BG_MOBILE, BG_DESKTOP, LOGIN_BG, LOGIN_BG_DESKTOP, "/steve-face.png",
       ...PACKAGES.map((p) => p.img),
       ...PACKAGES.map((p) => p.frame),
     ];
@@ -171,7 +208,7 @@ export default function CrazySMPStore() {
   }, []);
 
   return (
-    <div className="csmp-root" style={{ fontFamily: MC, background: "#141019", color: "#fff", minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+    <div className="csmp-root" style={{ fontFamily: MC, background: "#0a0712", color: "#fff", minHeight: "100vh", position: "relative" }}>
       <style>{`
         @import url('https://fonts.cdnfonts.com/css/minecraft-4');
         * { box-sizing: border-box; }
@@ -179,21 +216,33 @@ export default function CrazySMPStore() {
         @media (min-width: 900px) {
           .csmp-root { max-width: 1200px; }
         }
-        .csmp-hero {
-          position: relative;
-          background-image: linear-gradient(180deg, rgba(15,10,22,0.2) 0%, rgba(15,10,22,0.35) 30%, rgba(15,10,22,0.6) 60%, rgba(20,16,25,0.9) 85%, #141019 100%), url(${BG});
+        /* Fixed, full-page background — same image the whole way down the
+           page (not just the hero). Swapped for a wider desktop-ratio
+           version at the 900px breakpoint. Sits behind everything (z-index 0)
+           via .csmp-bg-fixed; the separate .csmp-bg-overlay layer directly
+           above it handles the scroll-driven blur/darken. */
+        .csmp-bg-fixed {
+          position: fixed;
+          inset: 0;
+          z-index: 0;
+          background-image: url(${BG_MOBILE});
           background-size: cover;
           background-position: center;
-          padding-bottom: 60px;
         }
         @media (min-width: 900px) {
-          .csmp-hero {
-            background-image: linear-gradient(180deg, rgba(15,10,22,0.1) 0%, rgba(15,10,22,0.45) 55%, #141019 100%),
-              radial-gradient(circle at 22% 20%, rgba(124,58,237,0.4), transparent 55%),
-              radial-gradient(circle at 82% 80%, rgba(37,99,235,0.32), transparent 55%),
-              linear-gradient(160deg, #1a1025 0%, #150d24 45%, #0a0812 100%);
-            padding: 30px 20px 80px;
-          }
+          .csmp-bg-fixed { background-image: url(${BG_DESKTOP}); }
+        }
+        .csmp-bg-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          will-change: backdrop-filter, background;
+        }
+        .csmp-content { position: relative; z-index: 2; display: flex; flex-direction: column; min-height: 100vh; }
+        .csmp-hero { position: relative; padding-bottom: 40px; }
+        @media (min-width: 900px) {
+          .csmp-hero { padding: 30px 20px 60px; }
         }
         .csmp-logo-img { width: 78%; max-width: 300px; }
         @media (min-width: 900px) {
@@ -207,6 +256,10 @@ export default function CrazySMPStore() {
         body { -webkit-font-smoothing: none; font-smooth: never; }
       `}</style>
 
+      <div className="csmp-bg-fixed" />
+      <div ref={bgOverlayRef} className="csmp-bg-overlay" />
+
+      <div className="csmp-content">
       {/* HERO */}
       <div className="csmp-hero">
         <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, padding: "20px 20px 0" }}>
@@ -267,6 +320,8 @@ export default function CrazySMPStore() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 14, color: "rgba(255,255,255,0.3)", fontSize: 12, fontFamily: MC }}>
           <ShieldCheck size={14} /> Checkout secured by a trusted payment processor
         </div>
+      </div>
+      {/* end .csmp-content */}
       </div>
 
       {/* Floating Discord button (circular, blur popup, scroll hide/show) */}
