@@ -262,7 +262,7 @@ export default function LoginPage() {
       {/* ============ sizes itself independently, so there's no       ============ */}
       {/* ============ cover-fit math needed at all.                   ============ */}
       {useMobileLayout !== false && (
-      <div className="csmp-login-mobile" style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      <div className="csmp-login-mobile" style={{ position: "absolute", inset: 0, overflow: "hidden", display: useMobileLayout === true ? "block" : undefined }}>
         <div
           style={{
             position: "absolute",
@@ -398,7 +398,7 @@ export default function LoginPage() {
       <div
         className="csmp-login-desktop"
         ref={deskContainerRef}
-        style={{ position: "absolute", inset: 0, alignItems: "center", justifyContent: "center", background: "#05030a" }}
+        style={{ position: "absolute", inset: 0, alignItems: "center", justifyContent: "center", background: "#05030a", display: useMobileLayout === false ? "flex" : undefined }}
       >
         {deskFit && (
           <div

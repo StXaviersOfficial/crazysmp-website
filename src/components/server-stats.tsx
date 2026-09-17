@@ -110,7 +110,12 @@ export function ServerStats() {
         .csmp-stat-ip:hover { color: #22D3EE !important; }
       `}</style>
 
-      <div style={{ display: "flex", gap: 40, justifyContent: "center", alignItems: "flex-start", flexWrap: "wrap" }}>
+      <div className="csmp-stat-buttons-row" style={{ display: "flex", gap: 40, justifyContent: "center", alignItems: "flex-start", flexWrap: "wrap" }}>
+        <style>{`
+          @media (min-width: 900px) {
+            .csmp-stat-buttons-row { transform: translateX(30px); }
+          }
+        `}</style>
         {/* Discord button — logo on top, count below, no box */}
         <a
           href={DISCORD_URL}

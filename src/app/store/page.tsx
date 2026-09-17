@@ -208,7 +208,7 @@ export default function CrazySMPStore() {
   }, []);
 
   return (
-    <div className="csmp-root" style={{ fontFamily: MC, background: "#0a0712", color: "#fff", minHeight: "100vh", position: "relative" }}>
+    <div className="csmp-root" style={{ fontFamily: MC, background: "#0a0712", color: "#fff", minHeight: "100vh", position: "relative", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.cdnfonts.com/css/minecraft-4');
         * { box-sizing: border-box; }

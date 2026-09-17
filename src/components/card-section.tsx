@@ -65,6 +65,7 @@ export function CardSection({
           position: relative;
           height: 520px;
           perspective: 1400px;
+          overflow: hidden;
         }
         @media (min-width: 900px) {
           .csmp-card-stack { height: 620px; }
