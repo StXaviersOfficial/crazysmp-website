@@ -220,16 +220,15 @@ function CardStack({
             transform = "translateX(240px) translateZ(-70px) rotateY(-32deg) scale(0.82)";
             opacity = 0.35;
             zIndex = 1;
-          } else if (diff < -2) {
-            // Way left — barely visible
-            transform = `translateX(${-340 + (diff + 2) * 50}px) translateZ(-100px) rotateY(38deg) scale(0.7)`;
-            opacity = 0.15;
-            zIndex = 0;
-          } else {
-            // Way right — barely visible
-            transform = `translateX(${340 + (diff - 2) * 50}px) translateZ(-100px) rotateY(-38deg) scale(0.7)`;
-            opacity = 0.15;
-            zIndex = 0;
+          } else if (diff < -2 || diff > 2) {
+            // Beyond ±2 cards — HIDDEN entirely (prevents page width overflow)
+            // This fixes the glitch where far cards made the page wider and
+            // caused the browser to zoom out on mobile.
+            transform = "translateX(0px) scale(0)";
+            opacity = 0;
+            zIndex = -1;
+            // Don't render at all — return null
+            return null;
           }
 
           return (

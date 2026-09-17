@@ -223,17 +223,7 @@ export default function CrazySMPStore() {
            above it handles the scroll-driven blur/darken. */
         .csmp-bg-fixed {
           position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          /* 100svh (small viewport height) instead of inset:0 / 100vh —
-             on mobile Chrome, inset:0 on a fixed element resizes as the
-             URL bar collapses on scroll, which made background-size:cover
-             recompute and made the image visibly "zoom in" a moment after
-             you started scrolling. svh is pinned to the smallest possible
-             viewport size regardless of toolbar state, so the element
-             never resizes and the zoom illusion is gone. */
-          height: 100svh;
+          inset: 0;
           z-index: 0;
           background-image: url(${BG_MOBILE});
           background-size: cover;
@@ -244,10 +234,7 @@ export default function CrazySMPStore() {
         }
         .csmp-bg-overlay {
           position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100svh;
+          inset: 0;
           z-index: 1;
           pointer-events: none;
           will-change: backdrop-filter, background;

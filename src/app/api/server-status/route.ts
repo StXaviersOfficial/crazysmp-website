@@ -11,7 +11,7 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const HOST = "crazynetwork.mc-connect.xyz";
+const HOST = "play.crazysmp.bond";
 const PORT = 25569;
 
 function writeVarInt(value: number): Buffer {

@@ -21,7 +21,7 @@ import * as React from "react";
 const MC_FONT = "'Minecraft', 'Inter', monospace";
 const PRICE_FONT = "'Space Grotesk', 'Inter', sans-serif";
 const DISCORD_URL = "https://discord.gg/GFzAeUj7TJ";
-const SERVER_IP = "crazynetwork.mc-connect.xyz";
+const SERVER_IP = "play.crazysmp.bond";
 const SERVER_PORT = 25569;
 
 /** Official Discord "Clyde" logo (from simpleicons.org) */
