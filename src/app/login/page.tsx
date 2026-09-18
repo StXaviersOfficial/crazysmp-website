@@ -202,19 +202,19 @@ export default function LoginPage() {
         @keyframes islandBreathe {
           0%, 100% {
             transform: scale(1);
-            filter: drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 45px rgba(147,51,234,0.3));
+            filter: drop-shadow(0 0 24px rgba(255,140,0,0.4)) drop-shadow(0 0 50px rgba(255,100,0,0.2));
           }
           50% {
             transform: scale(1.035);
-            filter: drop-shadow(0 0 32px rgba(192,132,252,0.75)) drop-shadow(0 0 65px rgba(147,51,234,0.5));
+            filter: drop-shadow(0 0 36px rgba(255,140,0,0.7)) drop-shadow(0 0 70px rgba(255,80,0,0.4));
           }
         }
         .csmp-login-island { animation: islandBreathe 3.6s ease-in-out infinite; }
 
         /* Pulsing glow on username box — flame-colored (orange/gold) */
         @keyframes csmp-glow-username {
-          0%, 100% { box-shadow: 0 0 8px rgba(255,140,0,0.3), inset 0 0 6px rgba(255,165,0,0.1); }
-          50% { box-shadow: 0 0 24px rgba(255,140,0,0.6), inset 0 0 12px rgba(255,165,0,0.2); }
+          0%, 100% { box-shadow: 0 0 12px rgba(255,140,0,0.35), inset 0 0 8px rgba(255,165,0,0.12); }
+          50% { box-shadow: 0 0 32px rgba(255,140,0,0.7), inset 0 0 16px rgba(255,165,0,0.25); }
         }
         .csmp-glow-username-box {
           animation: csmp-glow-username 2.8s ease-in-out infinite;
@@ -224,8 +224,8 @@ export default function LoginPage() {
 
         /* Pulsing glow on bedrock bar — flame-colored */
         @keyframes csmp-glow-bedrock {
-          0%, 100% { box-shadow: 0 0 6px rgba(255,100,0,0.2); }
-          50% { box-shadow: 0 0 18px rgba(255,100,0,0.45); }
+          0%, 100% { box-shadow: 0 0 10px rgba(255,100,0,0.25); }
+          50% { box-shadow: 0 0 24px rgba(255,100,0,0.5); }
         }
         .csmp-glow-bedrock-box {
           animation: csmp-glow-bedrock 2.6s ease-in-out infinite;
@@ -235,8 +235,8 @@ export default function LoginPage() {
 
         /* Pulsing glow on CONTINUE box — flame-colored */
         @keyframes csmp-glow-continue {
-          0%, 100% { box-shadow: 0 0 8px rgba(255,80,0,0.25); }
-          50% { box-shadow: 0 0 26px rgba(255,80,0,0.55); }
+          0%, 100% { box-shadow: 0 0 12px rgba(255,80,0,0.3); }
+          50% { box-shadow: 0 0 34px rgba(255,80,0,0.65); }
         }
         .csmp-glow-continue-box {
           animation: csmp-glow-continue 2.2s ease-in-out infinite;
@@ -246,8 +246,8 @@ export default function LoginPage() {
 
         /* Pulsing text glow on CONTINUE text — flame-colored */
         @keyframes csmp-glow-continue-text {
-          0%, 100% { text-shadow: 0 0 6px #fff, 0 0 14px #ff8c00, 0 0 24px #ff6500; }
-          50% { text-shadow: 0 0 8px #fff, 0 0 22px #ff8c00, 0 0 36px #ff6500, 0 0 52px #cc4400; }
+          0%, 100% { text-shadow: 0 0 8px #fff, 0 0 18px #ff8c00, 0 0 30px #ff6500; }
+          50% { text-shadow: 0 0 10px #fff, 0 0 28px #ff8c00, 0 0 44px #ff6500, 0 0 60px #cc4400; }
         }
         .csmp-glow-continue-text {
           animation: csmp-glow-continue-text 2.2s ease-in-out infinite;
@@ -306,7 +306,7 @@ export default function LoginPage() {
             padding: 20,
           }}
         >
-          <img src="/login-island.webp" alt="" className="csmp-login-island" style={{ width: "70%", maxWidth: 340, marginBottom: "-4%", pointerEvents: "none" }} />
+          <img src="/login-island.webp" alt="" className="csmp-login-island" style={{ width: "70%", maxWidth: 340, marginBottom: "-4%", marginTop: "-50px", pointerEvents: "none" }} />
 
           <div style={{ width: "88%", maxWidth: 380, display: "flex", flexDirection: "column", gap: 10 }}>
             {/* Username bar */}
@@ -459,7 +459,7 @@ export default function LoginPage() {
               padding: 20,
             }}
           >
-            <img src="/login-island.webp" alt="" className="csmp-login-island" style={{ width: "34%", maxWidth: 460, marginBottom: "-4%", pointerEvents: "none" }} />
+            <img src="/login-island.webp" alt="" className="csmp-login-island" style={{ width: "34%", maxWidth: 460, marginBottom: "-4%", marginTop: "-50px", pointerEvents: "none" }} />
 
             <div style={{ width: "36%", minWidth: 420, maxWidth: 560, display: "flex", flexDirection: "column", gap: 12 }}>
               {/* Username bar */}
