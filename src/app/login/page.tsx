@@ -10,7 +10,7 @@ const LOGO = "/store-logo-new.webp";
 const MC = "'Minecraft', 'Inter', monospace";
 // Pixel font with LOWERCASE support (Minecraft font is uppercase-only,
 // but usernames need exact case preservation)
-const USERNAME_FONT = "'Pixelify Sans', 'Minecraft', monospace";
+const USERNAME_FONT = "'Minecraft', 'Pixelify Sans', monospace"; // real font now has lowercase, no longer need Pixelify fallback first
 
 // Intrinsic size of login-bg.webp — used to compute exact cover-fill math
 // below (not just for display, so don't change without re-measuring).
@@ -188,7 +188,6 @@ export default function LoginPage() {
   return (
     <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#0a0612" }}>
       <style>{`
-        @import url('https://fonts.cdnfonts.com/css/minecraft-4');
         html, body { overflow: hidden !important; height: 100%; overscroll-behavior: none; }
         .csmp-login-mobile { display: block; }
         .csmp-login-desktop { display: none; }
@@ -200,6 +199,17 @@ export default function LoginPage() {
         .csmp-login-continue:active { transform: scale(0.97); }
         .csmp-toggle-track { transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
         .csmp-toggle-knob { transition: transform 0.2s ease; }
+        @keyframes islandBreathe {
+          0%, 100% {
+            transform: scale(1);
+            filter: drop-shadow(0 0 20px rgba(168,85,247,0.5)) drop-shadow(0 0 45px rgba(147,51,234,0.3));
+          }
+          50% {
+            transform: scale(1.035);
+            filter: drop-shadow(0 0 32px rgba(192,132,252,0.75)) drop-shadow(0 0 65px rgba(147,51,234,0.5));
+          }
+        }
+        .csmp-login-island { animation: islandBreathe 3.6s ease-in-out infinite; }
 
         /* Pulsing glow on username box — draws attention to where to click */
         @keyframes csmp-glow-username {
@@ -285,7 +295,7 @@ export default function LoginPage() {
             padding: 20,
           }}
         >
-          <img src="/login-island.webp" alt="" style={{ width: "70%", maxWidth: 340, marginBottom: "-4%", pointerEvents: "none" }} />
+          <img src="/login-island.webp" alt="" className="csmp-login-island" style={{ width: "70%", maxWidth: 340, marginBottom: "-4%", pointerEvents: "none" }} />
 
           <div style={{ width: "88%", maxWidth: 380, display: "flex", flexDirection: "column", gap: 10 }}>
             {/* Username bar */}
@@ -326,10 +336,24 @@ export default function LoginPage() {
             <div style={{ position: "relative", cursor: "pointer" }} onClick={toggleBedrock}>
               <img src="/bar-bedrock.webp" alt="" style={{ width: "100%", display: "block", pointerEvents: "none" }} />
               <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center" }}>
+                <span
+                  style={{
+                    marginLeft: "19%",
+                    fontFamily: MC,
+                    fontSize: "clamp(10px, 3vw, 14px)",
+                    color: "#7dffd8",
+                    letterSpacing: 1,
+                    textShadow: "0 0 8px rgba(74,222,128,0.6)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  BEDROCK ACCOUNT
+                </span>
                 <div
                   className="csmp-toggle-track"
                   style={{
-                    marginLeft: "80%",
+                    marginLeft: "auto",
+                    marginRight: "12%",
                     width: "15%",
                     aspectRatio: "2 / 1",
                     borderRadius: 999,
@@ -391,159 +415,155 @@ export default function LoginPage() {
       </div>
       )}
 
-      {/* ============ DESKTOP: real background art (login-bg-desktop.webp), ============ */}
-      {/* ============ CONTAIN-fit (never crops) with a decorative border    ============ */}
-      {/* ============ frame around the letterboxed edges.                   ============ */}
+      {/* ============ DESKTOP: same layered approach as mobile — separate ============ */}
+      {/* ============ bg + floating island + 3 bar overlays, using the    ============ */}
+      {/* ============ bare landscape scene (no island/buttons baked in)   ============ */}
+      {/* ============ as the sky layer, scaled up for desktop.            ============ */}
       {useMobileLayout !== true && (
-      <div
-        className="csmp-login-desktop"
-        ref={deskContainerRef}
-        style={{ position: "absolute", inset: 0, alignItems: "center", justifyContent: "center", background: "#05030a", display: useMobileLayout === false ? "flex" : undefined }}
-      >
-        {deskFit && (
+        <div
+          className="csmp-login-desktop"
+          style={{ position: "absolute", inset: 0, alignItems: "center", justifyContent: "center", display: useMobileLayout === false ? "flex" : undefined, overflow: "hidden" }}
+        >
           <div
             style={{
               position: "absolute",
-              left: deskFit.offsetX - 10,
-              top: deskFit.offsetY - 10,
-              width: deskFit.renderedW + 20,
-              height: deskFit.renderedH + 20,
-              border: "1px solid rgba(168,85,247,0.4)",
-              borderRadius: 14,
-              boxShadow: "0 0 50px -6px rgba(147,51,234,0.4), inset 0 0 40px -10px rgba(147,51,234,0.25)",
-              pointerEvents: "none",
+              inset: 0,
+              backgroundImage: "url(/front-bg-desktop.webp)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
             }}
           />
-        )}
 
-        {deskFit && (
-          <img
-            src={LOGIN_BG_DESKTOP}
-            alt="Login"
-            style={{
-              position: "absolute",
-              left: deskFit.offsetX,
-              top: deskFit.offsetY,
-              width: deskFit.renderedW,
-              height: deskFit.renderedH,
-              maxWidth: "none",
-              maxHeight: "none",
-              display: "block",
-              borderRadius: 8,
-            }}
-          />
-        )}
-
-        {/* Username box — entire box clickable */}
-        {dBox1 && (
           <div
-            className="csmp-glow-username-box"
-            style={{ position: "absolute", left: dBox1.left, top: dBox1.top, width: dBox1.width, height: dBox1.height, display: "flex", alignItems: "center", cursor: "text", zIndex: 3 }}
-            onClick={(e) => { const input = e.currentTarget.querySelector("input"); if (input) input.focus(); }}
-          >
-            <input
-              className="csmp-login-input"
-              value={username}
-              onChange={(e) => setUsername(sanitize(e.target.value, bedrock))}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-              placeholder="Username"
-              maxLength={16}
-              autoFocus
-              style={{
-                flex: 1,
-                minWidth: 0,
-                height: "70%",
-                marginLeft: "17%",
-                paddingRight: "4%",
-                background: "transparent",
-                border: "none",
-                outline: "none",
-                color: "#fff",
-                fontFamily: USERNAME_FONT,
-                fontSize: 17,
-                letterSpacing: 0.5,
-                caretColor: "#a855f7",
-              }}
-            />
-          </div>
-        )}
-
-        {/* Bedrock toggle — whole bar toggles it, plus a pill switch on the right */}
-        {dBox2 && (
-          <div
-            style={{ position: "absolute", left: dBox2.left, top: dBox2.top, width: dBox2.width, height: dBox2.height, display: "flex", alignItems: "center", cursor: "pointer", zIndex: 3 }}
-            onClick={toggleBedrock}
-          >
-            <div
-              className="csmp-toggle-track"
-              style={{
-                marginLeft: "80%",
-                width: "15%",
-                aspectRatio: "2 / 1",
-                borderRadius: 999,
-                background: bedrock ? "linear-gradient(90deg,#0f9b6a,#34d399)" : "rgba(255,255,255,0.15)",
-                border: bedrock ? "1px solid rgba(74,222,128,0.85)" : "1px solid rgba(255,255,255,0.35)",
-                boxShadow: bedrock ? "0 0 10px rgba(52,211,153,0.7)" : "none",
-                position: "relative",
-                flexShrink: 0,
-              }}
-            >
-              <div
-                className="csmp-toggle-knob"
-                style={{
-                  position: "absolute",
-                  top: "10%",
-                  left: "8%",
-                  height: "80%",
-                  aspectRatio: "1 / 1",
-                  borderRadius: "50%",
-                  background: "#fff",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
-                  transform: bedrock ? "translateX(95%)" : "translateX(0%)",
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Continue box — entire box clickable */}
-        {dBox3 && (
-          <button
-            onClick={handleSubmit}
-            disabled={!username.trim()}
-            className="csmp-glow-continue-box"
             style={{
-              position: "absolute",
-              left: dBox3.left,
-              top: dBox3.top,
-              width: dBox3.width,
-              height: dBox3.height,
-              background: "transparent",
-              border: "none",
-              cursor: username.trim() ? "pointer" : "default",
+              position: "relative",
+              zIndex: 2,
+              height: "100%",
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              zIndex: 3,
+              padding: 20,
             }}
           >
-            <span
-              className="csmp-glow-continue-text"
-              style={{
-                fontFamily: MC,
-                fontSize: 20,
-                fontWeight: 700,
-                color: "#fff",
-                letterSpacing: 3,
-                opacity: username.trim() ? 1 : 0.55,
-                display: "inline-block",
-              }}
-            >
-              CONTINUE
-            </span>
-          </button>
-        )}
-      </div>
+            <img src="/login-island.webp" alt="" className="csmp-login-island" style={{ width: "34%", maxWidth: 460, marginBottom: "-4%", pointerEvents: "none" }} />
+
+            <div style={{ width: "36%", minWidth: 420, maxWidth: 560, display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* Username bar */}
+              <div
+                className="csmp-glow-username-box"
+                style={{ position: "relative", cursor: "text" }}
+                onClick={(e) => { const input = e.currentTarget.querySelector("input"); if (input) input.focus(); }}
+              >
+                <img src="/bar-username.webp" alt="" style={{ width: "100%", display: "block", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center" }}>
+                  <input
+                    className="csmp-login-input"
+                    value={username}
+                    onChange={(e) => setUsername(sanitize(e.target.value, bedrock))}
+                    onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                    placeholder="Username"
+                    maxLength={16}
+                    autoFocus
+                    style={{
+                      width: "100%",
+                      height: "70%",
+                      marginLeft: "19%",
+                      paddingRight: "6%",
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      color: "#fff",
+                      fontFamily: USERNAME_FONT,
+                      fontSize: 17,
+                      letterSpacing: 0.5,
+                      caretColor: "#a855f7",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Bedrock toggle bar */}
+              <div style={{ position: "relative", cursor: "pointer" }} onClick={toggleBedrock}>
+                <img src="/bar-bedrock.webp" alt="" style={{ width: "100%", display: "block", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center" }}>
+                  <span
+                    style={{
+                      marginLeft: "19%",
+                      fontFamily: MC,
+                      fontSize: 15,
+                      color: "#7dffd8",
+                      letterSpacing: 1,
+                      textShadow: "0 0 8px rgba(74,222,128,0.6)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    BEDROCK ACCOUNT
+                  </span>
+                  <div
+                    className="csmp-toggle-track"
+                    style={{
+                      marginLeft: "auto",
+                      marginRight: "10%",
+                      width: "15%",
+                      aspectRatio: "2 / 1",
+                      borderRadius: 999,
+                      background: bedrock ? "linear-gradient(90deg,#0f9b6a,#34d399)" : "rgba(255,255,255,0.15)",
+                      border: bedrock ? "1px solid rgba(74,222,128,0.85)" : "1px solid rgba(255,255,255,0.35)",
+                      boxShadow: bedrock ? "0 0 10px rgba(52,211,153,0.7)" : "none",
+                      position: "relative",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <div
+                      className="csmp-toggle-knob"
+                      style={{
+                        position: "absolute",
+                        top: "10%",
+                        left: "8%",
+                        height: "80%",
+                        aspectRatio: "1 / 1",
+                        borderRadius: "50%",
+                        background: "#fff",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+                        transform: bedrock ? "translateX(95%)" : "translateX(0%)",
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Continue bar */}
+              <button
+                onClick={handleSubmit}
+                disabled={!username.trim()}
+                className="csmp-glow-continue-box"
+                style={{ position: "relative", background: "none", border: "none", padding: 0, cursor: username.trim() ? "pointer" : "default" }}
+              >
+                <img src="/bar-continue.webp" alt="" style={{ width: "100%", display: "block", pointerEvents: "none" }} />
+                <span
+                  className="csmp-glow-continue-text"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: MC,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    color: "#fff",
+                    letterSpacing: 3,
+                    textShadow: "0 0 6px #fff, 0 0 16px #e879f9, 0 0 28px #c026d3, 0 0 42px #a21caf",
+                    opacity: username.trim() ? 1 : 0.55,
+                  }}
+                >
+                  CONTINUE
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

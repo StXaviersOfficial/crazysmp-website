@@ -60,12 +60,18 @@ export function CardSection({
   return (
     <div style={{ padding: "50px 20px 8px" }}>
       <style>{`
-        @import url('https://fonts.cdnfonts.com/css/minecraft-4');
         .csmp-card-stack {
           position: relative;
           height: 520px;
           perspective: 1400px;
-          overflow: hidden;
+          /* overflow:hidden REMOVED — it was clipping the tops/sides of the
+             peeking 3D cards (their tilted+translated bounding boxes extend
+             past this container). Horizontal page scroll is prevented at
+             the html/body level instead (see below), not by clipping here. */
+        }
+        html, body {
+          overflow-x: hidden;
+          max-width: 100vw;
         }
         @media (min-width: 900px) {
           .csmp-card-stack { height: 620px; }

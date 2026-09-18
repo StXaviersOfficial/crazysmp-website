@@ -36,6 +36,7 @@ function DiscordLogo({ size = 54 }: { size?: number }) {
 export function ServerStats() {
   const [discord, setDiscord] = React.useState<{ members: number; online: number } | null>(null);
   const [server, setServer] = React.useState<{ online: boolean; players?: { online: number; max: number } } | null>(null);
+  const [showCopied, setShowCopied] = React.useState(false);
 
   const fetchDiscord = async () => {
     try {
@@ -67,6 +68,8 @@ export function ServerStats() {
 
   const copyIp = () => {
     navigator.clipboard?.writeText(`${SERVER_IP}:${SERVER_PORT}`).catch(() => {});
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 1800);
   };
 
   return (
@@ -108,6 +111,19 @@ export function ServerStats() {
           transition: color 0.2s ease;
         }
         .csmp-stat-ip:hover { color: #22D3EE !important; }
+        @keyframes csmp-toast-in {
+          0% { opacity: 0; transform: translate(-50%, 12px); }
+          12%, 82% { opacity: 1; transform: translate(-50%, 0); }
+          100% { opacity: 0; transform: translate(-50%, 12px); }
+        }
+        .csmp-ip-toast {
+          position: fixed;
+          left: 50%;
+          bottom: 28px;
+          z-index: 100;
+          animation: csmp-toast-in 1.8s ease forwards;
+          pointer-events: none;
+        }
       `}</style>
 
       <div className="csmp-stat-buttons-row" style={{ display: "flex", gap: 40, justifyContent: "center", alignItems: "flex-start", flexWrap: "wrap" }}>
@@ -193,6 +209,26 @@ export function ServerStats() {
       >
         {SERVER_IP}:{SERVER_PORT}
       </button>
+
+      {showCopied && (
+        <div className="csmp-ip-toast">
+          <div
+            style={{
+              fontFamily: MC_FONT,
+              fontSize: 13,
+              color: "#fff",
+              background: "rgba(20,14,28,0.92)",
+              border: "1px solid rgba(74,222,128,0.5)",
+              boxShadow: "0 0 20px rgba(74,222,128,0.35), 0 4px 16px rgba(0,0,0,0.5)",
+              borderRadius: 10,
+              padding: "10px 18px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            ✓ IP copied!
+          </div>
+        </div>
+      )}
     </div>
   );
 }

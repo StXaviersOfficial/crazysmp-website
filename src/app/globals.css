@@ -1,6 +1,39 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Real Minecraft font (self-hosted, 1:1 exact) — replaces the old
+   fonts.cdnfonts.com/css/minecraft-4 @import hack used everywhere else
+   in this project. Use font-family: 'Minecraft' anywhere that hack was
+   referenced; weight/style pick the right file automatically. */
+@font-face {
+  font-family: 'Minecraft';
+  src: url('/fonts/Minecraft-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Minecraft';
+  src: url('/fonts/Minecraft-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Minecraft';
+  src: url('/fonts/Minecraft-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Minecraft';
+  src: url('/fonts/Minecraft-BoldItalic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

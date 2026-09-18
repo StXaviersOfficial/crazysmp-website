@@ -20,8 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
-        {/* Minecraft font from cdnfonts (Mojangles-style pixel font) */}
-        <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/minecraft-4" />
+        {/* Minecraft font is now self-hosted (see globals.css @font-face) — was fonts.cdnfonts.com */}
         {/* Space Grotesk — geometric sans-serif for price numbers (modern, clean numerals) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

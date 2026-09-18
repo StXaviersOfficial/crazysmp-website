@@ -20,7 +20,7 @@ const MC = "'Minecraft', 'Inter', monospace";
 // Pixel font that supports LOWERCASE (Minecraft font is uppercase-only,
 // but usernames need exact case: 'Steve' ≠ 'STEVE').
 // Pixelify Sans looks very similar to Minecraft's pixelated aesthetic.
-const USERNAME_FONT = "'Pixelify Sans', 'Minecraft', monospace";
+const USERNAME_FONT = "'Minecraft', 'Pixelify Sans', monospace"; // real font now has lowercase, no longer need Pixelify fallback first
 // Better font for prices — Space Grotesk is geometric, modern, and renders
 // numbers beautifully. Loaded via Google Fonts in layout.tsx.
 const PRICE_FONT = "'Space Grotesk', 'Inter', sans-serif";
@@ -210,7 +210,6 @@ export default function CrazySMPStore() {
   return (
     <div className="csmp-root" style={{ fontFamily: MC, background: "#0a0712", color: "#fff", minHeight: "100vh", position: "relative", overflowX: "hidden" }}>
       <style>{`
-        @import url('https://fonts.cdnfonts.com/css/minecraft-4');
         * { box-sizing: border-box; }
         .csmp-root { max-width: 480px; margin: 0 auto; }
         @media (min-width: 900px) {
@@ -223,7 +222,10 @@ export default function CrazySMPStore() {
            above it handles the scroll-driven blur/darken. */
         .csmp-bg-fixed {
           position: fixed;
-          inset: 0;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100svh;
           z-index: 0;
           background-image: url(${BG_MOBILE});
           background-size: cover;
@@ -234,7 +236,10 @@ export default function CrazySMPStore() {
         }
         .csmp-bg-overlay {
           position: fixed;
-          inset: 0;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100svh;
           z-index: 1;
           pointer-events: none;
           will-change: backdrop-filter, background;
