@@ -20,10 +20,10 @@ const MC = "'Minecraft', 'Inter', monospace";
 // Pixel font that supports LOWERCASE (Minecraft font is uppercase-only,
 // but usernames need exact case: 'Steve' ≠ 'STEVE').
 // Pixelify Sans looks very similar to Minecraft's pixelated aesthetic.
-const USERNAME_FONT = "'Minecraft', 'Pixelify Sans', monospace"; // real font now has lowercase, no longer need Pixelify fallback first
+const USERNAME_FONT = "'Minecraft', monospace"; // real self-hosted font, has lowercase
 // Better font for prices — Space Grotesk is geometric, modern, and renders
 // numbers beautifully. Loaded via Google Fonts in layout.tsx.
-const PRICE_FONT = "'Space Grotesk', 'Inter', sans-serif";
+const PRICE_FONT = "'Minecraft', monospace";
 
 const PACKAGES = [
   // Ranks (6 tiers)

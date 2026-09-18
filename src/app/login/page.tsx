@@ -10,7 +10,7 @@ const LOGO = "/store-logo-new.webp";
 const MC = "'Minecraft', 'Inter', monospace";
 // Pixel font with LOWERCASE support (Minecraft font is uppercase-only,
 // but usernames need exact case preservation)
-const USERNAME_FONT = "'Minecraft', 'Pixelify Sans', monospace"; // real font now has lowercase, no longer need Pixelify fallback first
+const USERNAME_FONT = "'Minecraft', monospace"; // real self-hosted font, has lowercase
 
 // Intrinsic size of login-bg.webp — used to compute exact cover-fill math
 // below (not just for display, so don't change without re-measuring).

@@ -28,7 +28,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const MC = "'Minecraft', 'Inter', monospace";
 // Better font for prices — Space Grotesk is geometric, modern, and renders
 // numbers beautifully. Loaded via Google Fonts in layout.tsx.
-const PRICE_FONT = "'Space Grotesk', 'Inter', sans-serif";
+const PRICE_FONT = "'Minecraft', monospace";
 
 const TONES: Record<string, { border: string; text: string; glow: string }> = {
   cyan:    { border: "#22D3EE", text: "#67E8F9", glow: "rgba(34,211,238,0.5)" },

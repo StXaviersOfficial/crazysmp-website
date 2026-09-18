@@ -18,8 +18,8 @@ import * as React from "react";
  * every 30 seconds from the client.
  */
 
-const MC_FONT = "'Minecraft', 'Inter', monospace";
-const PRICE_FONT = "'Space Grotesk', 'Inter', sans-serif";
+const MC_FONT = "'Minecraft', monospace";
+const PRICE_FONT = "'Minecraft', monospace";
 const DISCORD_URL = "https://discord.gg/GFzAeUj7TJ";
 const SERVER_IP = "play.crazysmp.bond";
 const SERVER_PORT = 25569;
@@ -188,13 +188,13 @@ export function ServerStats() {
         </button>
       </div>
 
-      {/* Server IP below both buttons — click to copy, bold normal font */}
+      {/* Server IP below both buttons — click to copy, Minecraft font */}
       <button
         onClick={copyIp}
-        title="Click to copy IP"
+        title="Click to copy IP + Port"
         className="csmp-stat-ip"
         style={{
-          fontFamily: PRICE_FONT,
+          fontFamily: MC_FONT,
           fontWeight: 700,
           fontSize: 18,
           color: "rgba(255,255,255,0.6)",
@@ -205,9 +205,14 @@ export function ServerStats() {
           padding: 0,
           marginTop: 40,
           cursor: "pointer",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 2,
         }}
       >
-        {SERVER_IP}:{SERVER_PORT}
+        <span>{SERVER_IP}</span>
+        <span style={{ fontSize: 14, opacity: 0.5 }}>port:{SERVER_PORT}</span>
       </button>
 
       {showCopied && (
