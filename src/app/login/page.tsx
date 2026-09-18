@@ -211,32 +211,43 @@ export default function LoginPage() {
         }
         .csmp-login-island { animation: islandBreathe 3.6s ease-in-out infinite; }
 
-        /* Pulsing glow on username box — draws attention to where to click */
+        /* Pulsing glow on username box — flame-colored (orange/gold) */
         @keyframes csmp-glow-username {
-          0%, 100% { box-shadow: 0 0 8px rgba(168,85,247,0.25), inset 0 0 6px rgba(168,85,247,0.08); }
-          50% { box-shadow: 0 0 22px rgba(168,85,247,0.55), inset 0 0 12px rgba(168,85,247,0.15); }
+          0%, 100% { box-shadow: 0 0 8px rgba(255,140,0,0.3), inset 0 0 6px rgba(255,165,0,0.1); }
+          50% { box-shadow: 0 0 24px rgba(255,140,0,0.6), inset 0 0 12px rgba(255,165,0,0.2); }
         }
         .csmp-glow-username-box {
           animation: csmp-glow-username 2.8s ease-in-out infinite;
           border-radius: 12px;
-          background: rgba(168,85,247,0.04);
+          background: rgba(255,140,0,0.05);
         }
 
-        /* Pulsing glow on CONTINUE box — calls user to action */
+        /* Pulsing glow on bedrock bar — flame-colored */
+        @keyframes csmp-glow-bedrock {
+          0%, 100% { box-shadow: 0 0 6px rgba(255,100,0,0.2); }
+          50% { box-shadow: 0 0 18px rgba(255,100,0,0.45); }
+        }
+        .csmp-glow-bedrock-box {
+          animation: csmp-glow-bedrock 2.6s ease-in-out infinite;
+          border-radius: 12px;
+          background: rgba(255,100,0,0.03);
+        }
+
+        /* Pulsing glow on CONTINUE box — flame-colored */
         @keyframes csmp-glow-continue {
-          0%, 100% { box-shadow: 0 0 8px rgba(192,38,211,0.2); }
-          50% { box-shadow: 0 0 22px rgba(192,38,211,0.5); }
+          0%, 100% { box-shadow: 0 0 8px rgba(255,80,0,0.25); }
+          50% { box-shadow: 0 0 26px rgba(255,80,0,0.55); }
         }
         .csmp-glow-continue-box {
           animation: csmp-glow-continue 2.2s ease-in-out infinite;
           border-radius: 12px;
-          background: rgba(192,38,211,0.04);
+          background: rgba(255,80,0,0.04);
         }
 
-        /* Pulsing text glow on CONTINUE text */
+        /* Pulsing text glow on CONTINUE text — flame-colored */
         @keyframes csmp-glow-continue-text {
-          0%, 100% { text-shadow: 0 0 6px #fff, 0 0 16px #e879f9, 0 0 28px #c026d3; }
-          50% { text-shadow: 0 0 8px #fff, 0 0 24px #e879f9, 0 0 40px #c026d3, 0 0 60px #a21caf; }
+          0%, 100% { text-shadow: 0 0 6px #fff, 0 0 14px #ff8c00, 0 0 24px #ff6500; }
+          50% { text-shadow: 0 0 8px #fff, 0 0 22px #ff8c00, 0 0 36px #ff6500, 0 0 52px #cc4400; }
         }
         .csmp-glow-continue-text {
           animation: csmp-glow-continue-text 2.2s ease-in-out infinite;
@@ -324,23 +335,25 @@ export default function LoginPage() {
                     color: "#fff",
                     fontFamily: USERNAME_FONT,
                     fontWeight: 600,
-                    fontSize: 16,
+                    fontSize: 17,
                     letterSpacing: 0.5,
-                    caretColor: "#a855f7",
+                    caretColor: "#ff8c00",
+                    transform: "translateY(5px)",
                   }}
                 />
               </div>
             </div>
 
             {/* Bedrock toggle bar */}
-            <div style={{ position: "relative", cursor: "pointer" }} onClick={toggleBedrock}>
+            <div className="csmp-glow-bedrock-box" style={{ position: "relative", cursor: "pointer" }} onClick={toggleBedrock}>
               <img src="/bar-bedrock.webp" alt="" style={{ width: "100%", display: "block", pointerEvents: "none" }} />
-              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center" }}>
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", transform: "translateY(-2px)" }}>
                 <span
                   style={{
                     marginLeft: "19%",
                     fontFamily: MC,
-                    fontSize: "clamp(10px, 3vw, 14px)",
+                    fontSize: "clamp(11px, 3vw, 15px)",
+                    fontWeight: 700,
                     color: "#7dffd8",
                     letterSpacing: 1,
                     textShadow: "0 0 8px rgba(74,222,128,0.6)",
@@ -399,12 +412,12 @@ export default function LoginPage() {
                   alignItems: "center",
                   justifyContent: "center",
                   fontFamily: MC,
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: 700,
                   color: "#fff",
                   letterSpacing: 3,
-                  textShadow: "0 0 6px #fff, 0 0 16px #e879f9, 0 0 28px #c026d3, 0 0 42px #a21caf",
                   opacity: username.trim() ? 1 : 0.55,
+                  transform: "translateY(-3px)",
                 }}
               >
                 CONTINUE
